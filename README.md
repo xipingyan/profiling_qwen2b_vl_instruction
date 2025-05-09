@@ -14,8 +14,9 @@ Profiling and try to optimize qwen2_vl_2b_instruction model based on OpenVINO.
 
 2. Convert to OV.
 
+Refer: https://docs.openvino.ai/2024/notebooks/qwen2-vl-with-output.html
+
 ```
-    Refer: https://docs.openvino.ai/2024/notebooks/qwen2-vl-with-output.html
     cvt_ov.sh
 ```
 
@@ -33,10 +34,10 @@ Profiling and try to optimize qwen2_vl_2b_instruction model based on OpenVINO.
 
 4. Run example cpp.
 
-```
-    Download openvino_genai and decompress to:(for example)
-    download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/
+Download openvino_genai and decompress to:(for example) <br>
+download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/  <br>
 
+```
     deactivate
     source download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/setupvars.sh
 ```
