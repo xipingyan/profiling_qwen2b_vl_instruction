@@ -1,0 +1,5 @@
+*.jpg
+pyenv
+download.sh
+download_ov
+ov_model_i8
