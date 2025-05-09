@@ -30,6 +30,8 @@ Refer: https://docs.openvino.ai/2024/notebooks/qwen2-vl-with-output.html
 
     pip freeze | grep genai
     openvino-genai==2025.1.0.0
+
+    python example_ov_py/test_pipeline.py 
 ```
 
 4. Run example cpp.
@@ -40,4 +42,38 @@ download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/  <br>
 ```
     deactivate
     source download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/setupvars.sh
+
+    cd example_ov_cpp
+    mkdir build && cd build
+    ./qwen2vl_app_cpp
+    ./qwen2vl_app_cpp <model_dir> <img fn>
+```
+
+4.1 Update OpenVINO.genai, local build and test.
+
+Build genai, please [refer](https://github.com/xipingyan/openvino.genai/blob/xp/add_get_logits_score/src/docs/BUILD.md#build-openvino-openvino-tokenizers-and-openvino-genai-from-source).
+
+```
+    git clone https://github.com/xipingyan/openvino.genai.git --branch xp/add_get_logits_score
+    git submodule update --init
+
+    cd openvino.genai
+    source ../download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/setupvars.sh
+
+    cmake -DCMAKE_BUILD_TYPE=Release -S ./ -B ./build/
+    cmake --build ./build/ --config Release -j
+    cmake --install ./build/ --config Release --prefix ./install_release
+```
+
+Copy libs to genai libs. and test app.
+
+```
+    cp openvino.genai/install_release/runtime/lib/intel64/* ./download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/runtime/lib/intel64/
+
+    source download_ov/openvino_genai_ubuntu24_2025.1.0.0_x86_64/setupvars.sh
+    example_ov_cpp/build
+    rm -rf *
+    cmake ..
+    make -j20
+    ./qwen2vl_app_cpp 
 ```
