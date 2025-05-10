@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            // "program": "${file}",
+            "program": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/example.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
+            // "args": ["-m", "/home/llm_irs/models/stable-diffusion-v2-1/onnx/dldt/FP32/"],
+		    "cwd" : "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/"
+        }
+    ]
+}

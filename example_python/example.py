@@ -160,6 +160,9 @@ class Model_Qwen2_VL_2B():
         return sim
 
 def unit_test_qwen2_vl_2b():
+    torch.cuda.set_device(1)
+    print("== device: ", torch.cuda.get_device_name(torch.cuda.current_device()))
+
     model = Model_Qwen2_VL_2B()
     img_root='../'
     inp_imgs = [img_root+"cat_1.jpg"]
