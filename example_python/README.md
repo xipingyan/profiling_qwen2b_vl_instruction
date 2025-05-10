@@ -114,6 +114,51 @@ Refer ../README.md to download.
         position_embeddings = self.rotary_emb->[3, 1, 409, 128]*2
 
         for decoder_layer in self.layers: loop 29 ->hidden_states[1, 409, 1536]
-            ...
-        logits=lm_head(hidden_states[[1, 409, 1536]])->[1, 409, 151936]
+            layer_outputs:hidden_states[1, 409, 1536] = decoder_layer(
+                    hidden_states[1, 409, 1536],
+                    attention_mask=causal_mask,
+                    position_ids=position_ids[3, 1, 409],
+                    past_key_value=past_key_values,
+                    output_attentions=output_attentions,
+                    use_cache=use_cache,
+                    cache_position=cache_position,
+                    position_embeddings=position_embeddings,
+                )
+                example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:849
+                hidden_states[1, 409, 1536] = self.input_layernorm(hidden_states[1, 409, 1536]) # Qwen2RMSNorm
+
+                hidden_states, self_attn_weights, present_key_value = self.self_attn(hidden_states,...) # ```Qwen2VLSdpaAttention```
+                example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:737
+                    query_states[1, 409, 1536] = self.q_proj(hidden_states[1, 409, 1536])
+                    key_states[1, 409, 256] = self.k_proj(hidden_states)
+                    value_states[1, 409, 256] = self.v_proj(hidden_states)
+
+                    query_states[1, 12, 409, 128] = query_states.view(bsz, q_len, -1, self.head_dim).transpose(1, 2)
+                    key_states[1, 2, 409, 128] = key_states.view(bsz, q_len, -1, self.head_dim).transpose(1, 2)
+                    value_states[1, 2, 409, 128] = value_states.view(bsz, q_len, -1, self.head_dim).transpose(1, 2)
+
+                    query_states[1, 12, 409, 128], key_states[1, 2, 409, 128] = apply_multimodal_rotary_pos_emb(query_states, key_states)
+
+                    key_states[1, 12, 409, 128] = repeat_kv(key_states, self.num_key_value_groups)
+                    value_states[1, 12, 409, 128] = repeat_kv(value_states, self.num_key_value_groups)
+                    
+                    attn_output[1, 12, 409, 128] = torch.nn.functional.scaled_dot_product_attention(q,k,v)
+
+                    attn_output = attn_output.transpose(1, 2).contiguous()
+                    attn_output[1, 409, 1536] = attn_output.view(bsz, q_len, self.hidden_size)
+
+                    attn_output[1, 409, 1536] = self.o_proj(attn_output[1, 409, 1536])
+                
+                hidden_states[1, 409, 1536] = residual + hidden_states[1, 409, 1536]
+                
+                # Fully Connected
+                residual = hidden_states
+                hidden_states = self.post_attention_layernorm(hidden_states)
+                hidden_states[1, 409, 1536] = self.mlp(hidden_states) # 3 linear
+                hidden_states = residual + hidden_states
+
+        hidden_states[1, 409, 1536] = self.norm(hidden_states[1, 409, 1536])
+
+        logits[1, 409, 151936]=lm_head(hidden_states[[1, 409, 1536]]) # linear(,weight[151936, 1536])
+
         Qwen2VLCausalLMOutputWithPast()
