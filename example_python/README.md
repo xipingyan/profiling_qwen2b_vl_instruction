@@ -67,6 +67,9 @@ Refer ../README.md to download.
             ->[-1,3,2,14,14]
             self.proj(conv3d), kernel:[2,14,14],stride:[2,14,14],out_channel:1280 - > [1440,1280]
             example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:230
+            ```Suggest:```
+                ./tests/benchdnn/benchdnn --conv --mode=p --engine=gpu --dir=FWD_B --dt=f16 mb1440_ic3id2ih14iw14_oc1280od1oh1ow1_kd2kh14kw14sd2sh14sw14pd1ph1pw1
+
         rotary_pos_emb=self.rot_pos_emb(grid_thw[[1,30,48]])->torch.Size([1440, 40])
 
         hidden_states = loop 33:Qwen2VLVisionBlock(hidden_states[1440, 1280])
