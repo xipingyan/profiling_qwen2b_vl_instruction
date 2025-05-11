@@ -69,6 +69,7 @@ Refer ../README.md to download.
             example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:230
             ```Suggest:```
                 ./tests/benchdnn/benchdnn --conv --mode=p --engine=gpu --dir=FWD_B --dt=f16 mb1440_ic3id2ih14iw14_oc1280od1oh1ow1_kd2kh14kw14sd2sh14sw14pd1ph1pw1
+                mb1440_ic3oc1280_id2od1kd2sd2dd0pd0_ih14oh1kh14sh14dh0ph0_iw14ow1kw14sw14dw0pw0, (b580,tm=0.16ms)
 
         rotary_pos_emb=self.rot_pos_emb(grid_thw[[1,30,48]])->torch.Size([1440, 40])
 
