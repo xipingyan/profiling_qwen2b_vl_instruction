@@ -67,6 +67,7 @@ Refer ../README.md to download.
             ->[-1,3,2,14,14]
             self.proj(conv3d), kernel:[2,14,14],stride:[2,14,14],out_channel:1280 - > [1440,1280]
             example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:230
+            # Conv3d(3, 1280, kernel_size=(2, 14, 14), stride=(2, 14, 14), bias=False)
             ```Suggest:```
                 ./tests/benchdnn/benchdnn --conv --mode=p --engine=gpu --dir=FWD_B --dt=f16 mb1440_ic3id2ih14iw14_oc1280od1oh1ow1_kd2kh14kw14sd2sh14sw14pd1ph1pw1
                 mb1440_ic3oc1280_id2od1kd2sd2dd0pd0_ih14oh1kh14sh14dh0ph0_iw14ow1kw14sw14dw0pw0, (b580,tm=0.16ms)
