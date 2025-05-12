@@ -77,3 +77,18 @@ Copy libs to genai libs. and test app.
     make -j20
     ./qwen2vl_app_cpp 
 ```
+
+onetrace profiling
+
+```
+    onetrace --chrome-call-logging --chrome-device-timeline ./qwen2vl_app_cpp
+```
+
+4.2 Use latest OpenVINO.genai(with patch) + latest OV, local build and test.
+
+    python3 -m venv env_cpp
+    source env_cpp/bin/activate
+
+    cd openvino && mkdir build && cd build
+    cmake -DENABLE_DEBUG_CAPS=ON -DENABLE_INTEL_CPU=OFF -DENABLE_AUTO=OFF -DENABLE_AUTO_BATCH=OFF -DENABLE_INTEL_NPU=OFF -DCMAKE_INSTALL_PREFIX=install ..
+    make -j32 && make install
