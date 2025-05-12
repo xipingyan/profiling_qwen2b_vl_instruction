@@ -63,7 +63,7 @@ Refer ../README.md to download.
 
     image_embeds = self.visual(pixel_values, grid_thw=image_grid_thw) -> [360,1536]
     Qwen2VisionTransformerPretrainedModel
-        hidden_states = patch_embed(hidden_states)->[1440,1280]
+        hidden_states = patch_embed(hidden_states[1440,1176])->[1440,1280]
             ->[-1,3,2,14,14]
             self.proj(conv3d), kernel:[2,14,14],stride:[2,14,14],out_channel:1280 - > [1440,1280]
             example_python/qwen_env/lib/python3.10/site-packages/transformers/models/qwen2_vl/modeling_qwen2_vl.py:230

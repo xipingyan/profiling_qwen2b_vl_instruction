@@ -89,6 +89,19 @@ onetrace profiling
     python3 -m venv env_cpp
     source env_cpp/bin/activate
 
+    <!-- build ov -->
     cd openvino && mkdir build && cd build
-    cmake -DENABLE_DEBUG_CAPS=ON -DENABLE_INTEL_CPU=OFF -DENABLE_AUTO=OFF -DENABLE_AUTO_BATCH=OFF -DENABLE_INTEL_NPU=OFF -DCMAKE_INSTALL_PREFIX=install ..
+    cmake -DENABLE_DEBUG_CAPS=ON -DENABLE_AUTO=OFF -DENABLE_AUTO_BATCH=OFF -DENABLE_INTEL_NPU=OFF -DCMAKE_INSTALL_PREFIX=install ..
     make -j32 && make install
+
+    <!-- build genai -->
+    git clone https://github.com/xipingyan/openvino.genai.git --branch xp/return_logits_via_score
+    cd openvino.genai
+    cmake -DCMAKE_BUILD_TYPE=Release -S ./ -B ./build/
+    cmake --build ./build/ --config Release -j
+
+    <!-- Run sample -->
+    ./build/samples/cpp/visual_language_chat/visual_language_chat ../ov_model_i8/ ../cat_1.jpg GPU
+
+    <!-- onetrace profiling -->
+    onetrace --chrome-call-logging --chrome-device-timeline ./build/samples/cpp/visual_language_chat/visual_language_chat ../ov_model_i8/ ../cat_1.jpg GPU
