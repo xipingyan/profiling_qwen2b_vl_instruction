@@ -7,3 +7,12 @@ openvino.genai
 Qwen
 openvino
 env_cpp
+
+.vscode
+*.log
+dump_*
+exec_graph.bin
+exec_graph.xml
+onetrace.429373.json
+ov_model_zaixing
+tmp_nightly
