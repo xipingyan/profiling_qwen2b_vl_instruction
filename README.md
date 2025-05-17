@@ -17,16 +17,18 @@ Profiling and try to optimize qwen2_vl_2b_instruction model based on OpenVINO.
 Refer: https://docs.openvino.ai/2024/notebooks/qwen2-vl-with-output.html
 
 ```
+    python3 -m venv pyenv
+    source pyenv/bin/activate
+    pip install openvino-genai
+    pip install requests pillow
+
     cvt_ov.sh
 ```
 
 3. Run example python.
 
 ```
-    python3 -m venv pyenv
     source pyenv/bin/activate
-    pip install openvino-genai
-    pip install requests pillow
 
     pip freeze | grep genai
     openvino-genai==2025.1.0.0

@@ -4,6 +4,33 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/build/samples/cpp/visual_language_chat/visual_language_chat",
+            "args": ["/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/ov_model_i8/",
+                "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/cat_2.jpg", 
+                "GPU"],
+            "stopAtEntry": false,
+            "cwd": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     
         {
             "name": "Python Debugger: Current File",
