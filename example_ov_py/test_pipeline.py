@@ -7,8 +7,8 @@ import numpy as np
 import openvino as ov
 import time
 
-ov_model='./ov_model_i8/'
-#ov_model='./Qwen2-VL-2B-Instruct/INT4'
+# ov_model='./ov_model_i8/'
+ov_model='../Qwen2-VL-2B-Instruct/INT4'
 pipe = ov_genai.VLMPipeline(ov_model, device='GPU')
 
 config = ov_genai.GenerationConfig()
@@ -31,7 +31,7 @@ def streamer(subword: str) -> bool:
     """
     print(subword, end="", flush=True)
 
-image, image_tensor = load_image('./cat_1.jpg')
+image, image_tensor = load_image('../cat_1.jpg')
 prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
 
 print(f"Question:\n  {prompt}")
@@ -39,9 +39,11 @@ print(f"Question:\n  {prompt}")
 for id in range(5):
     t1 = time.time()
     # print("sssss=", type(image_tensor))
-    output = pipe.generate([prompt]*2, image=[image_tensor]*2, generation_config=config)
+    # output = pipe.generate([prompt]*2, image=[image_tensor]*2, generation_config=config)
+    output = pipe.generate(prompt, image=image_tensor, generation_config=config)
     t2 = time.time()
     print(f'== {id} time = {t2-t1:.3f} s')
-print('output.texts = ', output[0].texts, output[1].texts)
-print('output[0].scores = ', output[0].scores)
-print('output[1].scores = ', output[1].scores)
+print('output = ', output)
+# print('output.texts = ', output[0].texts, output[1].texts)
+# print('output[0].scores = ', output[0].scores)
+# print('output[1].scores = ', output[1].scores)
