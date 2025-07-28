@@ -16,3 +16,7 @@ exec_graph.xml
 onetrace.429373.json
 ov_model_zaixing
 tmp_nightly
+openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64
+Qwen2-VL-2B-Instruct/
+Qwen2-VL-2B-Instruct_video/
+python-env/
