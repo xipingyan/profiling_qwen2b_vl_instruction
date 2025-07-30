@@ -295,7 +295,135 @@ def unit_test_qwen2_vl_2b():
     print(f"== rerank similarity: {similarity}")
     print("== Done.")
 
+def resize_img(image_url_or_file):
+    fn = image_url_or_file.split("img_")[1]
+    rsz_fn = "../test_video/rsz_"+fn
+    if os.path.exists(rsz_fn):
+        return rsz_fn
+
+    image = Image.open(image_url_or_file).convert("RGB")
+    resized_image = image.resize((448, 364), Image.Resampling.BICUBIC)
+    resized_image.save(rsz_fn)
+    return rsz_fn
+
+def test_video():
+    model_id = "../Qwen/Qwen2.5-VL-3B-Instruct/"
+    from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+    from qwen_vl_utils import process_vision_info
+
+    # default: Load the model on the available device(s)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
+    )
+    processor = AutoProcessor.from_pretrained(model_id)
+
+    print("== Test video:")
+    messages = [{
+        "role": "user",
+        "content": [
+            {
+                "type": "video",
+                "video": [
+                    resize_img('../test_video/img_0.png'),
+                    resize_img('../test_video/img_1.png'),
+                    resize_img('../test_video/img_2.png'),
+                    resize_img('../test_video/img_3.png'),
+                    resize_img('../test_video/img_4.png'),
+                    resize_img('../test_video/img_5.png'),
+                    resize_img('../test_video/img_6.png'),
+                    resize_img('../test_video/img_7.png'),
+                    resize_img('../test_video/img_8.png')
+                ],
+            },
+            {"type": "text", "text": "请描述这个视频："},
+        ],
+    }]
+
+    text = processor.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
+    inputs = processor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        # fps=1.0,
+        padding=True,
+        return_tensors="pt",
+        **video_kwargs,
+    )
+    inputs = inputs.to("cpu")
+
+    # Inference
+    t1 = time.time()
+    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    t2 = time.time()
+    print(f"== infer time: {t2-t1:.3f} s")
+
+    generated_ids_trimmed = [
+        out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+    ]
+    output_text = processor.batch_decode(
+        generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    )
+    print(output_text)
+
+def test_imgages():
+    model_id = "../Qwen/Qwen2.5-VL-3B-Instruct/"
+    from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+    from qwen_vl_utils import process_vision_info
+
+    # default: Load the model on the available device(s)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
+    )
+    processor = AutoProcessor.from_pretrained(model_id)
+
+    messages = [
+    {
+        "role": "user",
+        "content": [
+            {"type": "image", "image": resize_img('../test_video/img_0.png')},
+            {"type": "image", "image": resize_img('../test_video/img_1.png')},
+            {"type": "image", "image": resize_img('../test_video/img_2.png')},
+            {"type": "image", "image": resize_img('../test_video/img_3.png')},
+            {"type": "image", "image": resize_img('../test_video/img_4.png')},
+            {"type": "image", "image": resize_img('../test_video/img_5.png')},
+            {"type": "image", "image": resize_img('../test_video/img_6.png')},
+            {"type": "image", "image": resize_img('../test_video/img_7.png')},
+            {"type": "image", "image": resize_img('../test_video/img_8.png')},
+            {"type": "text", "text": "请描述这个视频："},
+        ],
+    }
+    ]
+
+    # Preparation for inference
+    text = processor.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    image_inputs, video_inputs = process_vision_info(messages)
+    inputs = processor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        padding=True,
+        return_tensors="pt",
+    )
+    inputs = inputs.to("cpu")
+
+    # Inference
+    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    generated_ids_trimmed = [
+        out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+    ]
+    output_text = processor.batch_decode(
+        generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    )
+    print(output_text)
+
 if __name__ == "__main__":
-    os.environ['EXPORT_OV']="1"
-    EXPORT_OV = os.getenv('EXPORT_OV') == '1'
-    unit_test_qwen2_vl_2b()
+    # os.environ['EXPORT_OV']="1"
+    # EXPORT_OV = os.getenv('EXPORT_OV') == '1'
+    # unit_test_qwen2_vl_2b()
+    test_imgages()
+    # test_video()

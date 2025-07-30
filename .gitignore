@@ -19,4 +19,7 @@ tmp_nightly
 openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64
 Qwen2-VL-2B-Instruct/
 Qwen2-VL-2B-Instruct_video/
+Qwen2.5-VL-3B-Instruct
 python-env/
+test_video
+example_ov_cpp/vlm_cache/
