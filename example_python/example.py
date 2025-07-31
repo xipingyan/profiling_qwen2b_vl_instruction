@@ -310,13 +310,7 @@ def test_video():
     model_id = "../Qwen/Qwen2.5-VL-3B-Instruct/"
     from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
     from qwen_vl_utils import process_vision_info
-
-    # default: Load the model on the available device(s)
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
-    )
-    processor = AutoProcessor.from_pretrained(model_id)
-
+    
     print("== Test video:")
     messages = [{
         "role": "user",
@@ -339,10 +333,14 @@ def test_video():
         ],
     }]
 
+    prompt = """输入的多张时间连续的视频画面是由车内的摄像头拍摄得到的，所以本视频的主体是拍摄视频的车辆。 下面所有的分析都是基于视频车相关的元素（如车辆状态、人车交互、物体和车之家的交互，周围环境特征等），完成以下任务：1.精准识别与车辆发生关系的核心事件或关键现象，包括但不限于：人物对车辆的交互类型（剐蹭、停靠、触碰、撞击、扒充电枪，附近移动，踢车，拍打等）；周围环境情况（周边有障碍物、违规停放，环境正常，环境复杂等），以及与车辆发生交互关系的人物的描述（外卖员，普通人，警察， 小孩， 老年人等）、与车辆发生交互关系的车辆类型（两轮车，三轮车，摩托车，自行车，轿车， SUV，房产，大货车等）； 简短事件描述(比如行人拍打车窗，外卖员剐蹭后视镜等)。2.经过仔细分析后将分析结果浓缩为 30 个 token 以内的结论，要求语言简洁、判断明确、无模糊表述。3.必须严格按照这个格式输出最后的结果：人物对车辆的交互类型 - 人物的描述 - 车辆类型 - 环境情况 简短事件描述。下面给出来多个示例：例1：视频为外卖员骑车剐蹭汽车后视镜，输出：剐蹭 - 外卖员 - 两轮车 - 环境正常 穿黄衣外卖员骑车疑似剐蹭后视镜。 例2：视频为可疑人员拔自车充电枪，输出：扒充电枪 - 普通人 - 无 - 环境正常 可疑人员疑似拔充电枪例。 例3：视频为行人和汽车在自车附近移动未接触，输出：附近移动 - 多种 - 多种 - 环境正常 多行人与汽车在自车附近移动未接触。 例4：视频为行人踢车后轮，输出：踢车 - 普通人 - 无 - 环境正常 行人疑似用脚踢自车轮胎。 例5：视频为黑色 SUV 停靠时，女子开右后车门轻碰旁边白色轿车（无明显划痕，女子未察觉离开），输出：碰撞 - 女子 - 白色轿车 - 环境正常 车门边缘轻微碰到旁边白色轿车门。 例6：视频为一辆红色大货车在人流复杂的路口拐弯的时候疑似剐蹭到了汽车的前保险杠，输出：剐蹭-无-大货车-环境复杂 大货车剐蹭了前保险杠。例7：视频为一个穿着黑色外套的男子在不停的拍打前挡风玻璃，周围是一个停车场，输出：拍打-男子-无-环境正常 男子拍打前挡风玻璃。请严格遵循上述要求，基于输入的车辆相关视频信息，输出 30token 以内的精准结论。""";
+    
+    image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
+
+    processor = AutoProcessor.from_pretrained(model_id)
     text = processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-    image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
     inputs = processor(
         text=[text],
         images=image_inputs,
@@ -353,6 +351,11 @@ def test_video():
         **video_kwargs,
     )
     inputs = inputs.to("cpu")
+
+    # default: Load the model on the available device(s)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
+    )
 
     # Inference
     t1 = time.time()
@@ -425,5 +428,5 @@ if __name__ == "__main__":
     # os.environ['EXPORT_OV']="1"
     # EXPORT_OV = os.getenv('EXPORT_OV') == '1'
     # unit_test_qwen2_vl_2b()
-    test_imgages()
-    # test_video()
+    # test_imgages()
+    test_video()

@@ -17,6 +17,7 @@ pipe = ov_genai.VLMPipeline(ov_model, device='GPU')
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 100
+# config.is_video=True
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -73,5 +74,6 @@ def test_video():
     print('output = ', output)
 
 if __name__ == "__main__":
+    print("OV Version:", ov.get_version())
     # test_image()
     test_video()

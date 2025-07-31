@@ -7,6 +7,7 @@ type="video"
 # type="img"
 # video_img_path=../cat_1.jpg
 video_img_path=/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video/rsz_video
+video_img_path=/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video/customer_video
 
 # gdb --args 
 ./build/qwen2vl_app_cpp $model_id $type $video_img_path
