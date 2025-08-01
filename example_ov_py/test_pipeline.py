@@ -13,11 +13,14 @@ import time
 ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
 
 print("== ov_model=", ov_model)
-pipe = ov_genai.VLMPipeline(ov_model, device='GPU')
+device = 'GPU.1'
+print("== device = ", device)
+pipe = ov_genai.VLMPipeline(ov_model, device=device)
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 100
 # config.is_video=True
+print("== config.is_video = ", config.is_video)
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
