@@ -8,12 +8,12 @@ import openvino as ov
 import time
 
 # ov_model='./ov_model_i8/'
-# ov_model='../Qwen2-VL-2B-Instruct/INT4'
+ov_model='../Qwen2-VL-2B-Instruct/INT4'
 # ov_model='../Qwen2-VL-2B-Instruct_video/INT4'
-ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
+# ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
 
 print("== ov_model=", ov_model)
-device = 'GPU.1'
+device = 'GPU'
 print("== device = ", device)
 pipe = ov_genai.VLMPipeline(ov_model, device=device)
 
