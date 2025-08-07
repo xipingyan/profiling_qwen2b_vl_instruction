@@ -6,5 +6,6 @@ OV_ROOT_DIR=/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_t
 export PYTHONPATH=${GENAI_ROOT_DIR}:${GENAI_ROOT_DIR}openvino_genai:${OV_ROOT_DIR}/python/:$PYTHONPATH
 export LD_LIBRARY_PATH=${GENAI_ROOT_DIR}/../runtime/lib/intel64/:${OV_ROOT_DIR}/runtime/lib/intel64/:$LD_LIBRARY_PATH
 
-# gdb --args
- python ./test_pipeline.py
+# gdb --args 
+python ./test_pipeline_genai.py
+#  python ./test_pipeline_optimum.py

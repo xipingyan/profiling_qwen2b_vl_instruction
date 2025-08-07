@@ -1,9 +1,59 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Python C++ Debugger",
+            "type": "pythoncpp",
+            "request": "launch",
+            "pythonConfig": "default",
+            "cppAttachName": "(gdb) Attach",
+            "pythonLaunchName": "test_pipeline_genai"
+        },
+        {
+            "name": "(gdb) Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing"
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel"
+                }
+            ]
+        },
+        {
+            "name": "qwen2vl_app_cpp",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_cpp/build/qwen2vl_app_cpp",
+            "args": [
+                "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/Qwen2.5-VL-3B-Instruct/INT4/",
+                "video",
+                "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video/rsz_video"
+            ],
+            "stopAtEntry": false,
+            "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_cpp",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
 
         {
             "name": "(gdb) Launch",
@@ -31,18 +81,42 @@
                 }
             ]
         },
-    
         {
-            "name": "Python Debugger: Current File",
+            "name": "example_python/example.py",
             "type": "debugpy",
             "request": "launch",
-            // "program": "${file}",
             "program": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/example.py",
             "console": "integratedTerminal",
             "justMyCode": false,
             "python": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
-            // "args": ["-m", "/home/llm_irs/models/stable-diffusion-v2-1/onnx/dldt/FP32/"],
 		    "cwd" : "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/"
+        },
+        {
+            "name": "95_example_python/example.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_python/example.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
+            "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video"
+        },
+
+        {
+            "name": "test_pipeline_genai",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_py/test_pipeline_genai.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
+            "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_py",
+            "env": {
+                "GENAI_ROOT_DIR":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/",
+                "OV_ROOT_DIR":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64",
+                "PYTHONPATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/openvino_genai:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/python/:${env:PYTHONPATH}",
+                "LD_LIBRARY_PATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python//../runtime/lib/intel64/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/runtime/lib/intel64/:${env:LD_LIBRARY_PATH}"
+            }
         }
     ]
 }
