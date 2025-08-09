@@ -10,5 +10,6 @@ cd build
 export CMAKE_PREFIX_PATH="../../openvino.genai/install/runtime/cmake/"
 export CMAKE_PREFIX_PATH="../../openvino.genai/install/runtime/cmake/"
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j32

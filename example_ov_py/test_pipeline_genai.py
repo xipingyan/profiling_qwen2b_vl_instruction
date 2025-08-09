@@ -19,8 +19,6 @@ pipe = ov_genai.VLMPipeline(ov_model, device=device)
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 100
-# config.is_video=True
-print("== config.is_video = ", config.is_video)
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -71,7 +69,7 @@ def test_video():
 
     for id in range(1):
         t1 = time.time()
-        output = pipe.generate(prompt, images=imgs, generation_config=config)
+        output = pipe.generate(prompt, video=imgs, generation_config=config)
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
     print('output = ', output)
