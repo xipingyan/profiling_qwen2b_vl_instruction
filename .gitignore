@@ -26,3 +26,9 @@ python-env/
 test_video
 example_ov_cpp/vlm_cache/
 .vscode/launch.json
+
+OpenVINO
+Qwen2.5-VL-7B-Instruct
+example_ov_cpp/heaptrack.*.gz
+example_ov_cpp/onetrace.*.json
+example_ov_cpp/qwen2vl_app_cpp.*.json
