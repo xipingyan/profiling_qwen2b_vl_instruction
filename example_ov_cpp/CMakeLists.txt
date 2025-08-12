@@ -7,7 +7,7 @@ project($TARGET_NAME)
 find_package(OpenVINO REQUIRED)
 find_package(OpenVINOGenAI REQUIRED)
 
-add_executable(${TARGET_NAME} main.cpp load_image.cpp)
+add_executable(${TARGET_NAME} main.cpp load_image.cpp llm_lookup.cpp)
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOUCE_DIR}" "${CMAKE_BINARY_DIR}")
 

@@ -8,17 +8,18 @@ import openvino as ov
 import time
 
 # ov_model='./ov_model_i8/'
-ov_model='../Qwen2-VL-2B-Instruct/INT4'
+# ov_model='../Qwen2-VL-2B-Instruct/INT4'
 # ov_model='../Qwen2-VL-2B-Instruct_video/INT4'
-# ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
+ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
 
 print("== ov_model=", ov_model)
-device = 'GPU'
+device = 'GPU.1'
 print("== device = ", device)
 pipe = ov_genai.VLMPipeline(ov_model, device=device)
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 100
+config.is_video=True
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -69,7 +70,10 @@ def test_video():
 
     for id in range(1):
         t1 = time.time()
-        output = pipe.generate(prompt, video=imgs, generation_config=config)
+        pipe.start_chat()
+        # output = pipe.generate(prompt, video=imgs, generation_config=config)
+        output = pipe.generate(prompt, images=imgs, generation_config=config)
+        pipe.finish_chat()
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
     print('output = ', output)

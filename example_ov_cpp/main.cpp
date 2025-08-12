@@ -128,7 +128,9 @@ void test_video(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor> rgbs)
     // 视频展示了一次田径比赛的场景。画面中，跑道上有一群穿着蓝色运动服的女生正在参加接力赛跑。她们排成一排，依次向前跑去，显示出她们的专注和努力。在跑道的旁边，有几位观众在观看比赛，他们有的站着，有的坐着，有的拿着手机拍照或录像。背景中可以看到一些树木和建筑物，为整个场景增添了一种校园的氛围。
 }
 
-int main(int argc, char* argv[]) try {    
+int main(int argc, char* argv[]) try {
+    return test_llm_lookup(argc, argv);
+
     std::string img_video_path = "../../cat_1.jpg";
     std::string model_path = "../../ov_model_i8/";
     bool input_video = false;
