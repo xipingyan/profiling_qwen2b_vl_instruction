@@ -306,8 +306,8 @@ def resize_img(image_url_or_file):
     resized_image.save(rsz_fn)
     return rsz_fn
 
-def test_video():
-    model_id = "../Qwen/Qwen2.5-VL-3B-Instruct/"
+def test_video(device):
+    model_id = "../models/Qwen/Qwen2.5-VL-3B-Instruct/"
     from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
     from qwen_vl_utils import process_vision_info
     
@@ -329,6 +329,7 @@ def test_video():
                     resize_img('../test_video/img_8.png')
                 ],
             },
+            {"type": "image", "image": resize_img('../test_video/img_0.png')},
             {"type": "text", "text": "请描述这个视频："},
         ],
     }]
@@ -350,11 +351,11 @@ def test_video():
         return_tensors="pt",
         **video_kwargs,
     )
-    inputs = inputs.to("cpu")
+    inputs = inputs.to(device)
 
     # default: Load the model on the available device(s)
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
+        model_id, torch_dtype=torch.bfloat16, device_map=device
     )
 
     # Inference
@@ -371,14 +372,14 @@ def test_video():
     )
     print(output_text)
 
-def test_imgages():
+def test_imgages(device):
     model_id = "../Qwen/Qwen2.5-VL-3B-Instruct/"
     from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
     from qwen_vl_utils import process_vision_info
 
     # default: Load the model on the available device(s)
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        model_id, torch_dtype=torch.bfloat16, device_map="cpu"
+        model_id, torch_dtype=torch.bfloat16, device_map=device
     )
     processor = AutoProcessor.from_pretrained(model_id)
 
@@ -412,7 +413,7 @@ def test_imgages():
         padding=True,
         return_tensors="pt",
     )
-    inputs = inputs.to("cpu")
+    inputs = inputs.to(device)
 
     # Inference
     generated_ids = model.generate(**inputs, max_new_tokens=128)
@@ -425,8 +426,10 @@ def test_imgages():
     print(output_text)
 
 if __name__ == "__main__":
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
     # os.environ['EXPORT_OV']="1"
     # EXPORT_OV = os.getenv('EXPORT_OV') == '1'
     # unit_test_qwen2_vl_2b()
-    # test_imgages()
-    test_video()
+    # test_imgages(device)
+    test_video(device)

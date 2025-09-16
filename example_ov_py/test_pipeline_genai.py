@@ -7,19 +7,15 @@ import numpy as np
 import openvino as ov
 import time
 
-# ov_model='./ov_model_i8/'
-# ov_model='../Qwen2-VL-2B-Instruct/INT4'
-# ov_model='../Qwen2-VL-2B-Instruct_video/INT4'
-ov_model='../Qwen2.5-VL-3B-Instruct/INT4'
+ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
 
 print("== ov_model=", ov_model)
-device = 'GPU.1'
+device = 'GPU.0'
 print("== device = ", device)
 pipe = ov_genai.VLMPipeline(ov_model, device=device)
 
 config = ov_genai.GenerationConfig()
-config.max_new_tokens = 100
-config.is_video=True
+config.max_new_tokens = 20
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -40,7 +36,7 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
-    image, image_tensor = load_image('../cat_1.jpg')
+    image, image_tensor = load_image('../test_video/img_0.png')
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
 
     print(f"Question:\n  {prompt}")
@@ -57,8 +53,8 @@ def test_image():
     # print('output[0].scores = ', output[0].scores)
     # print('output[1].scores = ', output[1].scores)
 
-def test_video():
-    print("== test video.")
+def test_video(as_video=True):
+    print(f"== test video. as_video={as_video}")
     imgs = []
     for idx in range(9):
         image, image_tensor = load_image(f'../test_video/img_{idx}.png')
@@ -68,11 +64,13 @@ def test_video():
 
     print(f"Question:\n  {prompt}")
 
-    for id in range(1):
+    for id in range(3):
         t1 = time.time()
         pipe.start_chat()
-        # output = pipe.generate(prompt, video=imgs, generation_config=config)
-        output = pipe.generate(prompt, images=imgs, generation_config=config)
+        if as_video:
+            output = pipe.generate(prompt, video=imgs, generation_config=config)
+        else:
+            output = pipe.generate(prompt, images=imgs, generation_config=config)
         pipe.finish_chat()
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
@@ -81,4 +79,5 @@ def test_video():
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     # test_image()
-    test_video()
+    test_video(as_video=True)
+    test_video(as_video=False)

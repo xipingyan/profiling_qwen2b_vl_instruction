@@ -4,16 +4,16 @@ import cv2
 from PIL import Image
 
 def sample_frames(url, num_frames):
+    if 0: # download from url
+        response = requests.get(url)
+        path_id = str(uuid.uuid4())
+        path = f"./{path_id}.mp4" 
+        with open(path, "wb") as f:
+            f.write(response.content)
+    else:
+        # copy from windows
+        path = "./01d7eb3dc6b737efecb3bcfd62b06508.mp4"
 
-    # response = requests.get(url)
-    # path_id = str(uuid.uuid4())
-
-    # path = f"./{path_id}.mp4" 
-
-    # with open(path, "wb") as f:
-    #   f.write(response.content)
-
-    path = "./0a6ff8f343e5e45447bbbecdf2a29860.mp4"
     video = cv2.VideoCapture(path)
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     interval = total_frames // num_frames
