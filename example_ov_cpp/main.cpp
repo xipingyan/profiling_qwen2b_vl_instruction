@@ -79,7 +79,7 @@ void test_images(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor> rgbs)
     }
 }
 
-void test_video(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor> rgbs)
+void test_video(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor>& rgbs, ov::Tensor& video)
 {
     ov::genai::GenerationConfig generation_config;
     generation_config.max_new_tokens = 2048;
@@ -97,7 +97,6 @@ void test_video(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor> rgbs)
     //     auto t1 = std::chrono::high_resolution_clock::now();
     //     auto aa = pipe.generate(prompt,
     //                             ov::genai::images(rgbs),
-    //                             ov::genai::video(),
     //                             ov::genai::generation_config(generation_config));
     //                             // ov::genai::streamer(print_subword));
     //     auto t2 = std::chrono::high_resolution_clock::now();
@@ -105,21 +104,36 @@ void test_video(ov::genai::VLMPipeline& pipe, std::vector<ov::Tensor> rgbs)
     //     pipe.finish_chat();
     // }
 
-    std::cout << "  test_video pass 'video' " << std::endl;
+    std::cout << "  test_video pass 'video' with multiple tensors " << std::endl;
     for (int i = 0; i < 3; i++)
     {
         pipe.start_chat();
         std::cout << "  Loop: [" << i << "] ";
         auto t1 = std::chrono::high_resolution_clock::now();
         auto aa = pipe.generate(prompt,
-                                ov::genai::images(),
                                 ov::genai::video(rgbs),
                                 ov::genai::generation_config(generation_config));
-                                // ov::genai::streamer(print_subword));
+        // ov::genai::streamer(print_subword));
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << ", result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
         pipe.finish_chat();
     }
+
+    std::cout << "  test_video pass 'video' with one tensor " << std::endl;
+    for (int i = 0; i < 3; i++)
+    {
+        pipe.start_chat();
+        std::cout << "  Loop: [" << i << "] ";
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto aa = pipe.generate(prompt,
+                                ov::genai::video(std::vector<ov::Tensor>{video}),
+                                ov::genai::generation_config(generation_config));
+        // ov::genai::streamer(print_subword));
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << ", result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+        pipe.finish_chat();
+    }
+
     // python video result:
     // 视频展示了一群学生在操场上进行接力赛跑的场景。画面中，几位穿着统一蓝色运动服的学生正在起跑线前准备开始比赛。他们站在跑道上，背景是绿色的树木和远处的建筑物。\n\n随着裁判员的一声哨响，学生们迅速起跑，向前冲刺。他们的动作协调一致，显示出良好的团队合作精神。观众们站在一旁观看，为参赛者加油助威。\n\n整个场景充满了活力与激情，展现了青春体育的精神。
     // python images result:
@@ -133,28 +147,30 @@ int main(int argc, char* argv[]) try {
 
     std::string img_video_path = "../../cat_1.jpg";
     std::string model_path = "../../ov_model_i8/";
-    bool input_video = false;
+    bool input_video = true;
     std::string device = "GPU";
 
     pasre_params(argc, argv, model_path, input_video, img_video_path, device);
     // GPU and NPU can be used as well.
     // Note: If NPU selected, only language model will be run on NPU
-    ov::AnyMap enable_compile_cache;
+    ov::AnyMap cfg;
     if (device == "GPU") {
         // Cache compiled models on disk for GPU to save time on the
         // next run. It's not beneficial for CPU.
-        enable_compile_cache.insert({ov::cache_dir("vlm_cache")});
-        std::cout << "    enable_compile_cache = " << "vlm_cache" << std::endl;
+        cfg.insert({ov::cache_dir("vlm_cache")});
+        std::cout << "    cfg vlm_cache = " << "vlm_cache" << std::endl;
     }
     std::cout << "    device = " << device << std::endl;
 
     std::vector<ov::Tensor> rgbs = utils::load_images(img_video_path);
+    ov::Tensor video = utils::load_video(img_video_path);
 
     std::cout << "== Start to load model: " << model_path << std::endl;
-    ov::genai::VLMPipeline pipe(model_path, device, enable_compile_cache);
+    cfg["ATTENTION_BACKEND"] = "PA";
+    ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
     if (input_video) {
-        test_video(pipe, rgbs);
+        test_video(pipe, rgbs, video);
     }
     else {
         test_images(pipe, rgbs);

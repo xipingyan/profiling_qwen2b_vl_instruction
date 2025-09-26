@@ -25,6 +25,83 @@ std::vector<ov::Tensor> utils::load_images(const std::filesystem::path& input_pa
     return {utils::load_image(input_path)};
 }
 
+ov::Tensor utils::load_video(const std::filesystem::path& input_path) {
+    auto rgbs = load_images(input_path);
+    if (rgbs.size() == 0) {
+        return {};
+    }
+
+    auto video = ov::Tensor(ov::element::u8,
+                            ov::Shape{rgbs.size(), rgbs[0].get_shape()[1], rgbs[0].get_shape()[2], rgbs[0].get_shape()[3]});
+    std::cout << "video.shape = " << video.get_shape() << std::endl;
+
+    auto stride = rgbs[0].get_byte_size();
+    std::cout << "stride = " << stride << std::endl;
+    auto dst = video.data();
+    int b = 0;
+    for (auto rgb : rgbs)
+    {
+        std::memcpy(dst + stride * b, rgb.data(), stride);
+        b++;
+    }
+    return video;
+}
+
+#include <opencv2/opencv.hpp>
+// Return video with shape: [num_frames, height, width, 3]
+ov::Tensor utils::create_countdown_frames()
+{
+    int frames_count = 5, height = 240, width = 360;
+    auto video = ov::Tensor(ov::element::u8,
+                            ov::Shape{frames_count, height, width, 3});
+
+    for (int i = frames_count; i > 0; i--)
+    {
+        cv::Mat frame = cv::Mat::zeros(height, width, CV_8UC3);
+        std::string text = std::to_string(i);
+
+        int baseline = 0;
+        int fontFace = cv::FONT_HERSHEY_SIMPLEX;
+        double fontScale = 3.0; // Python '3' is a double in C++ OpenCV
+        int thickness = 4;
+
+        // The C++ getTextSize returns the size as a cv::Size
+        cv::Size textSize = cv::getTextSize(
+            text,
+            fontFace,
+            fontScale,
+            thickness,
+            &baseline // baseline is passed by pointer
+        );
+
+        int text_width = textSize.width;
+        int text_height = textSize.height;
+        int text_x = (width - text_width) / 2;
+        int text_y = (height + text_height) / 2;
+
+        cv::Scalar color = cv::Scalar(255, 255, 255); // BGR: White
+        cv::Point org(text_x, text_y);                // Origin point for the text
+
+        cv::putText(
+            frame,
+            text,
+            org,
+            fontFace,
+            fontScale,
+            color,
+            thickness,
+            cv::LINE_AA // The line type constant
+        );
+
+        int idx = frames_count - i;
+        std::memcpy(video.data() + idx * height * width * 3, frame.data, height * width * 3);
+
+        // cv::imshow("Centered Text Frame", frame);
+        // cv::waitKey(0);
+    }
+    return video;
+}
+
 ov::Tensor utils::load_image(const std::filesystem::path& image_path) {
     int x = 0, y = 0, channels_in_file = 0;
     constexpr int desired_channels = 3;

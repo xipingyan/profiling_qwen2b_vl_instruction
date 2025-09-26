@@ -60,8 +60,10 @@ def test_video(as_video=True):
         image, image_tensor = load_image(f'../test_video/img_{idx}.png')
         imgs.append(image_tensor)
 
-    prompt = "请描述这个视频："
-
+    if as_video:
+        prompt = "请描述这个视频："
+    else:
+        prompt = "请描述这些图像："
     print(f"Question:\n  {prompt}")
 
     for id in range(3):

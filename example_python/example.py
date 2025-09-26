@@ -12,110 +12,6 @@ from qwen_vl_utils import process_vision_info
 from PIL import Image
 import time
 
-# OpenVINO
-import openvino as ov
-from openvino.runtime import Core, Model, Tensor, PartialShape, Type, Shape, op, serialize
-import openvino.runtime as ov
-import openvino.properties.hint as hints
-from openvino.runtime.op import util as op_util
-from openvino.runtime import opset8 as opset
-
-EXPORT_OV = False
-
-def torch_type_to_ov_type(ttype:torch.dtype):
-    if ttype is torch.float32:
-        return Type.f32
-    elif ttype is torch.float16:
-        return Type.f16
-    else:
-        print(f"== Fail: not supported type {ttype}")
-        exit()
-
-def qwen2VLVisionBlock(blk, hidden_states, ):
-    # att
-    #   norm1
-
-    # blk.norm1.
-    opset.mvn(hidden_states, )
-    #  F.layer_norm(
-    #         input, self.normalized_shape, self.weight, self.bias, self.eps
-    #     )
-    
-    hidden_states
-    # mlp
-
-def new_vl_model(pt_model:Qwen2VLForConditionalGeneration):
-    conv3d=pt_model.visual.patch_embed.proj
-    input = opset.parameter([-1, -1], Type.f32, name='hidden_states')
-
-    # step 1: conv3d =============================
-    input_reshape = opset.reshape(input, [-1, 3, 2, 14, 14], True)
-    numpy_weight = conv3d.weight.to(torch.float).cpu().detach().numpy()
-    conv3d_weight = opset.constant(numpy_weight, torch_type_to_ov_type(torch.float32), "conv3d_weights")
-    strides=[2,14,14]
-    pads_begin = [0, 0, 0]
-    pads_end = [0, 0, 0]
-    dilations = [1, 1, 1]
-    conv3d = opset.convolution(input_reshape, conv3d_weight, strides, pads_begin, pads_end, dilations)
-    conv3d_reshape = opset.reshape(conv3d, [-1, 1280], special_zero=True)
-
-    # step 2: qwen2vl =============================
-    hidden_state = conv3d_reshape
-    for blk in pt_model.visual.blocks:
-        hidden_state = qwen2VLVisionBlock(blk, hidden_state)
-
-    Result = opset.result(conv3d_reshape, name='vl_result')
-    return Model([Result], [input], 'Model_VL')
-
-def pipeline_vl_ov(ov_model, pt_model:Qwen2VLForConditionalGeneration, torch_input):
-    core = Core()
-    ov.save_model(ov_model, "my_vl.xml")
-    cm = core.compile_model(model=ov_model, device_name='CPU')
-
-    # input = torch.load("hidden_states_conv3d_inp.pt").to(torch.float32).cpu().numpy()
-    grid_thw = torch_input["image_grid_thw"]
-    hidden_state = torch_input["pixel_values"].to(torch.float32).cpu().numpy()
-    # 'input_ids'
-    # 'attention_mask'
-    # pt_model.
-
-    rotary_pos_emb = pt_model.visual.rot_pos_emb(grid_thw)
-    emb = torch.cat((rotary_pos_emb, rotary_pos_emb), dim=-1)
-    position_embeddings = (emb.cos(), emb.sin())
-    cu_seqlens = torch.repeat_interleave(grid_thw[:, 1] * grid_thw[:, 2], grid_thw[:, 0]).cumsum(
-        dim=0,
-        # Select dtype based on the following factors:
-        #  - FA2 requires that cu_seqlens_q must have dtype int32
-        #  - torch.onnx.export requires that cu_seqlens_q must have same dtype as grid_thw
-        # See https://github.com/huggingface/transformers/pull/34852 for more information
-        dtype=grid_thw.dtype if torch.jit.is_tracing() else torch.int32,
-    )
-    cu_seqlens = F.pad(cu_seqlens, (1, 0), value=0)
-    print("cu_seqlens =", cu_seqlens)
-
-    result = cm([hidden_state])[cm.output(0)]
-
-    return result
-
-def export_vl_to_ov(model:Qwen2VLForConditionalGeneration, torch_input):
-    print("== Start to export VL model to OV.")
-
-    ov_model = new_vl_model(model)
-    result = pipeline_vl_ov(ov_model, model, torch_input)
-
-    print('Result shape:', result.shape)
-    outp_ov_pt = torch.tensor(result.tolist(), dtype=torch.float32)
-    # torch.save(outp_ov_pt, "hidden_states_conv3d_output_ov.pt")
-    outp_pt = torch.load("hidden_states_conv3d_outp.pt").to(torch.float32).cpu()
-
-    print("== Start to compare result:")
-    r = torch.isclose(outp_pt, outp_ov_pt, rtol=0.05, atol=0.05)
-    # for i in range(outp_ov_pt.shape[0]):
-    #     for j in range(outp_ov_pt.shape[1]):
-    #         if outp_ov_pt[i][j] - outp_pt[i][j] > 0.01:
-    #             print(f"== [{i}, {j}]diff {outp_ov_pt[i][j] - outp_pt[i][j]}")
-    print(f"== torch.isclose(OV and PT), result = {r.all()}")
-
 class Model_Qwen2_VL_2B():
     def __init__(self):
         self.__model_id = "../Qwen/Qwen2-VL-2B-Instruct"
@@ -177,10 +73,6 @@ class Model_Qwen2_VL_2B():
         with torch.no_grad():
             outputs = self.__model(**inputs) # No labels needed, just forward pass
             logits = outputs.logits
-
-        
-        if EXPORT_OV:
-            export_vl_to_ov(self.__model, inputs)
 
         #print("Forward pass complete.")
         #print(f"Logits shape: {logits.shape}") # Should be (batch_size, sequence_length, vocab_size)
@@ -268,10 +160,6 @@ class Model_Qwen2_VL_2B():
         return sim
 
 def unit_test_qwen2_vl_2b():
-    print("EXPORT_OV=", EXPORT_OV)
-    if EXPORT_OV:
-        print("== OV version:", ov.get_version())
-
     torch.cuda.set_device(1)
     print("== device: ", torch.cuda.get_device_name(torch.cuda.current_device()))
 
@@ -311,6 +199,8 @@ def test_video(device):
     from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
     from qwen_vl_utils import process_vision_info
     
+    prompt = """输入的多张时间连续的视频画面是由车内的摄像头拍摄得到的，所以本视频的主体是拍摄视频的车辆。 下面所有的分析都是基于视频车相关的元素（如车辆状态、人车交互、物体和车之家的交互，周围环境特征等），完成以下任务：1.精准识别与车辆发生关系的核心事件或关键现象，包括但不限于：人物对车辆的交互类型（剐蹭、停靠、触碰、撞击、扒充电枪，附近移动，踢车，拍打等）；周围环境情况（周边有障碍物、违规停放，环境正常，环境复杂等），以及与车辆发生交互关系的人物的描述（外卖员，普通人，警察， 小孩， 老年人等）、与车辆发生交互关系的车辆类型（两轮车，三轮车，摩托车，自行车，轿车， SUV，房产，大货车等）； 简短事件描述(比如行人拍打车窗，外卖员剐蹭后视镜等)。2.经过仔细分析后将分析结果浓缩为 30 个 token 以内的结论，要求语言简洁、判断明确、无模糊表述。3.必须严格按照这个格式输出最后的结果：人物对车辆的交互类型 - 人物的描述 - 车辆类型 - 环境情况 简短事件描述。下面给出来多个示例：例1：视频为外卖员骑车剐蹭汽车后视镜，输出：剐蹭 - 外卖员 - 两轮车 - 环境正常 穿黄衣外卖员骑车疑似剐蹭后视镜。 例2：视频为可疑人员拔自车充电枪，输出：扒充电枪 - 普通人 - 无 - 环境正常 可疑人员疑似拔充电枪例。 例3：视频为行人和汽车在自车附近移动未接触，输出：附近移动 - 多种 - 多种 - 环境正常 多行人与汽车在自车附近移动未接触。 例4：视频为行人踢车后轮，输出：踢车 - 普通人 - 无 - 环境正常 行人疑似用脚踢自车轮胎。 例5：视频为黑色 SUV 停靠时，女子开右后车门轻碰旁边白色轿车（无明显划痕，女子未察觉离开），输出：碰撞 - 女子 - 白色轿车 - 环境正常 车门边缘轻微碰到旁边白色轿车门。 例6：视频为一辆红色大货车在人流复杂的路口拐弯的时候疑似剐蹭到了汽车的前保险杠，输出：剐蹭-无-大货车-环境复杂 大货车剐蹭了前保险杠。例7：视频为一个穿着黑色外套的男子在不停的拍打前挡风玻璃，周围是一个停车场，输出：拍打-男子-无-环境正常 男子拍打前挡风玻璃。请严格遵循上述要求，基于输入的车辆相关视频信息，输出 30token 以内的精准结论。"""
+
     print("== Test video:")
     messages = [{
         "role": "user",
@@ -330,12 +220,11 @@ def test_video(device):
                 ],
             },
             {"type": "image", "image": resize_img('../test_video/img_0.png')},
-            {"type": "text", "text": "请描述这个视频："},
+            # {"type": "text", "text": "请描述这个视频："},
+            {"type": "text", "text": prompt},
         ],
     }]
 
-    prompt = """输入的多张时间连续的视频画面是由车内的摄像头拍摄得到的，所以本视频的主体是拍摄视频的车辆。 下面所有的分析都是基于视频车相关的元素（如车辆状态、人车交互、物体和车之家的交互，周围环境特征等），完成以下任务：1.精准识别与车辆发生关系的核心事件或关键现象，包括但不限于：人物对车辆的交互类型（剐蹭、停靠、触碰、撞击、扒充电枪，附近移动，踢车，拍打等）；周围环境情况（周边有障碍物、违规停放，环境正常，环境复杂等），以及与车辆发生交互关系的人物的描述（外卖员，普通人，警察， 小孩， 老年人等）、与车辆发生交互关系的车辆类型（两轮车，三轮车，摩托车，自行车，轿车， SUV，房产，大货车等）； 简短事件描述(比如行人拍打车窗，外卖员剐蹭后视镜等)。2.经过仔细分析后将分析结果浓缩为 30 个 token 以内的结论，要求语言简洁、判断明确、无模糊表述。3.必须严格按照这个格式输出最后的结果：人物对车辆的交互类型 - 人物的描述 - 车辆类型 - 环境情况 简短事件描述。下面给出来多个示例：例1：视频为外卖员骑车剐蹭汽车后视镜，输出：剐蹭 - 外卖员 - 两轮车 - 环境正常 穿黄衣外卖员骑车疑似剐蹭后视镜。 例2：视频为可疑人员拔自车充电枪，输出：扒充电枪 - 普通人 - 无 - 环境正常 可疑人员疑似拔充电枪例。 例3：视频为行人和汽车在自车附近移动未接触，输出：附近移动 - 多种 - 多种 - 环境正常 多行人与汽车在自车附近移动未接触。 例4：视频为行人踢车后轮，输出：踢车 - 普通人 - 无 - 环境正常 行人疑似用脚踢自车轮胎。 例5：视频为黑色 SUV 停靠时，女子开右后车门轻碰旁边白色轿车（无明显划痕，女子未察觉离开），输出：碰撞 - 女子 - 白色轿车 - 环境正常 车门边缘轻微碰到旁边白色轿车门。 例6：视频为一辆红色大货车在人流复杂的路口拐弯的时候疑似剐蹭到了汽车的前保险杠，输出：剐蹭-无-大货车-环境复杂 大货车剐蹭了前保险杠。例7：视频为一个穿着黑色外套的男子在不停的拍打前挡风玻璃，周围是一个停车场，输出：拍打-男子-无-环境正常 男子拍打前挡风玻璃。请严格遵循上述要求，基于输入的车辆相关视频信息，输出 30token 以内的精准结论。""";
-    
     image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
 
     processor = AutoProcessor.from_pretrained(model_id)
@@ -427,9 +316,6 @@ def test_imgages(device):
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # os.environ['EXPORT_OV']="1"
-    # EXPORT_OV = os.getenv('EXPORT_OV') == '1'
     # unit_test_qwen2_vl_2b()
     # test_imgages(device)
     test_video(device)

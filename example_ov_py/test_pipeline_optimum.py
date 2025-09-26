@@ -4,9 +4,19 @@ from optimum.intel.openvino import OVModelForVisualCausalLM
 from transformers import AutoProcessor, TextStreamer
 import openvino as ov
 
-model_id = '../Qwen2-VL-2B-Instruct/INT4'
-processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
-ov_model = OVModelForVisualCausalLM.from_pretrained(model_id, trust_remote_code=True)
+import transformers
+from transformers.video_utils import load_video
+
+input_video, _ = load_video("../../profiling_qwen2b_vl_instruction/test_video/01d7eb3dc6b737efecb3bcfd62b06508.mp4", num_frames=2, backend="opencv")
+
+print(type(input_video))
+print(input_video.shape)
+
+exit(0)
+
+# model_id = '../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
+# processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
+# ov_model = OVModelForVisualCausalLM.from_pretrained(model_id, trust_remote_code=True)
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
