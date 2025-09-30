@@ -163,13 +163,9 @@ int main(int argc, char *argv[])
         std::string device = "GPU";
 
         pasre_params(argc, argv, model_path, input_video, img_video_path, device);
-        // GPU and NPU can be used as well.
-        // Note: If NPU selected, only language model will be run on NPU
         ov::AnyMap cfg;
         if (device == "GPU")
         {
-            // Cache compiled models on disk for GPU to save time on the
-            // next run. It's not beneficial for CPU.
             cfg.insert({ov::cache_dir("vlm_cache")});
             std::cout << "    cfg vlm_cache = " << "vlm_cache" << std::endl;
         }
