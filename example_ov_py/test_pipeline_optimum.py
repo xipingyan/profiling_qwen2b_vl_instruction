@@ -7,16 +7,14 @@ import openvino as ov
 import transformers
 from transformers.video_utils import load_video
 
-input_video, _ = load_video("../../profiling_qwen2b_vl_instruction/test_video/01d7eb3dc6b737efecb3bcfd62b06508.mp4", num_frames=2, backend="opencv")
+# input_video, _ = load_video("../../profiling_qwen2b_vl_instruction/test_video/01d7eb3dc6b737efecb3bcfd62b06508.mp4", num_frames=2, backend="opencv")
+# print(type(input_video))
+# print(input_video.shape)
+# exit(0)
 
-print(type(input_video))
-print(input_video.shape)
-
-exit(0)
-
-# model_id = '../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
-# processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
-# ov_model = OVModelForVisualCausalLM.from_pretrained(model_id, trust_remote_code=True)
+model_id = '../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
+processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
+ov_model = OVModelForVisualCausalLM.from_pretrained(model_id, trust_remote_code=True)
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -29,7 +27,7 @@ def load_image(image_url_or_file):
 def load_all_images():
     imgs = []
     for idx in range(9):
-        image = load_image(f'../test_video/img_{idx}.png')
+        image = load_image(f'../test_video/rsz_video/img_{idx}.png')
         imgs.append(image)
     return imgs
 
@@ -65,6 +63,8 @@ def test_video():
     print("== Test video:")
 
     images = load_all_images()
+    # import numpy as np
+    # print(np.array(images[0]).shape)
 
     inputs = ov_model.preprocess_inputs(text=prompt, video=images, processor=processor)
 

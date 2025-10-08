@@ -8,6 +8,7 @@ cd models
 
 # model_id='Qwen/Qwen2.5-VL-7B-Instruct'
 # model_id='Qwen/Qwen2.5-VL-3B-Instruct'
+# model_id='katuni4ka/tiny-random-qwen2.5-vl/'
 
 # Refer: https://hf-mirror.com/
 # export HF_ENDPOINT=https://hf-mirror.com
@@ -19,4 +20,6 @@ cd models
 
 model_id='Qwen/Qwen2.5-VL-3B-Instruct'
 model_id='Qwen/Qwen2.5-VL-7B-Instruct'
-optimum-cli export openvino --model $model_id --task image-text-to-text Qwen2.5-VL-7B-Instruct/INT4 --weight-format int4 --trust-remote-code
+model_id='katuni4ka/tiny-random-qwen2.5-vl/'
+model_id='katuni4ka/tiny-random-qwen2vl'
+optimum-cli export openvino --model $model_id --task image-text-to-text $model_id/INT4 --weight-format int4 --trust-remote-code
