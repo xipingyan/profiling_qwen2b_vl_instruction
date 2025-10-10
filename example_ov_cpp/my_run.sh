@@ -13,7 +13,7 @@ type="video"
 video_img_path=../test_video/rsz_video
 
 device='GPU'
-device='CPU'
+# device='CPU'
 
 # gdb --args 
 # onetrace --chrome-call-logging --chrome-device-timeline 

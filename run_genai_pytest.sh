@@ -29,5 +29,5 @@ export HF_ENDPOINT=https://hf-mirror.com
 cd openvino.genai/tests/python_tests
 export OV_CACHE=./ov_cache
 # python -m pytest ./ -s -m precommit -k test_vlm_pipeline_video_input
-python -m pytest ./ -s -m precommit -k test_vlm_continuous_batching_generate_vs_add_request_video_input
-# python -m pytest ./ -s -m precommit -k test_vlm_pipeline_video_input_match_optimum
+# python -m pytest ./ -s -m precommit -k test_vlm_continuous_batching_generate_vs_add_request_video_input
+python -m pytest ./ -s -m precommit -k test_vlm_pipeline_match_optimum_video_input

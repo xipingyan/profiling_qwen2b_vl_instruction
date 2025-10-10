@@ -12,7 +12,7 @@ export LD_LIBRARY_PATH=${GENAI_ROOT_DIR}/../runtime/lib/intel64/:$LD_LIBRARY_PAT
 # source ov_venv/bin/activate
 
 # gdb --args 
-# python ./test_pipeline_genai.py
+python ./test_pipeline_genai.py
 # python ./test_pipeline_optimum.py
 # python test_llm_genai.py
-python test_vlm_continuous_batching_generate_vs_add_request.py
+# python test_vlm_continuous_batching_generate_vs_add_request.py
