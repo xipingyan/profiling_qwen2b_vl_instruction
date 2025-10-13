@@ -34,3 +34,7 @@ example_ov_cpp/heaptrack.*.gz
 example_ov_cpp/onetrace.*.json
 example_ov_cpp/qwen2vl_app_cpp.*.json
 example_ov_py/ov_venv
+
+katuni4ka
+openvino_tokenizers_ubuntu24_*
+docs

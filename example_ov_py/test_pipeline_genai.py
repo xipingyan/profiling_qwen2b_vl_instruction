@@ -12,11 +12,15 @@ ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
 print("== ov_model=", ov_model)
 device = 'GPU'
 # device = 'CPU'
-print("== device = ", device)
-pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND='SDPA')
+print("== device =", device)
+ATTENTION_BACKEND='SDPA'
+# ATTENTION_BACKEND='PA'
+print("== ATTENTION_BACKEND =", ATTENTION_BACKEND)
+pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND=ATTENTION_BACKEND)
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 50
+config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
 
 def load_image(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -42,11 +46,17 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
-    image = load_image('../test_video/img_0.png')
+    image = load_image('../test_video/rsz_0.png')
     ov_image = ov.Tensor(image)
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
 
     print(f"Question:\n  {prompt}")
+
+    result_from_streamer = []
+    def streamer(word: str) -> bool:
+        nonlocal result_from_streamer
+        result_from_streamer.append(word)
+        return False
 
     for id in range(5):
         t1 = time.time()
