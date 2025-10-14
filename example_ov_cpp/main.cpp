@@ -92,7 +92,7 @@ void test_video(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> &rgbs, ov:
     //          "";
     std::cout << "  prompt: " << prompt << std::endl;
 
-#if 1
+#if 0
     std::cout << "  test_video pass 'images' " << std::endl;
     for (int i = 0; i < 1; i++)
     {
@@ -142,20 +142,29 @@ void test_video(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> &rgbs, ov:
     }
 #endif
 
-#if 0
+#if 1
     std::cout << "  test_video pass 'video' + 'images' " << std::endl;
-    std::vector<ov::Tensor> images = std::vector<ov::Tensor>{rgbs[0], rgbs[1]};
-    auto shape = rgbs[0].get_shape();
+    // std::vector<ov::Tensor> images = std::vector<ov::Tensor>{rgbs[0], rgbs[1]};
+    std::vector<ov::Tensor> images = rgbs;
+    for (auto img: images) {
+        std::cout << "    Input image shape: " << img.get_shape() << std::endl;
+    }
+    auto shape = video.get_shape();
+    auto frame_byte_size = shape[1] * shape[2] * shape[3];
     ov::Tensor video1 = ov::Tensor(ov::element::u8, ov::Shape({3, shape[1], shape[2], shape[3]}));
     ov::Tensor video2 = ov::Tensor(ov::element::u8, ov::Shape({6, shape[1], shape[2], shape[3]}));
     for (int i = 0; i < 9; i++)
     {
         if (i < 3)
-            std::memcpy((char *)video1.data() + i * rgbs[0].get_byte_size(), (char *)rgbs[i].data(), rgbs[i].get_byte_size());
+            std::memcpy((char *)video1.data() + i * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
         else
-            std::memcpy((char *)video2.data() + (i - 3) * rgbs[0].get_byte_size(), (char *)rgbs[i].data(), rgbs[i].get_byte_size());
+            std::memcpy((char *)video2.data() + (i - 3) * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
     }
     std::vector<ov::Tensor> videos = {video1, video2};
+    for (auto vd : videos)
+    {
+        std::cout << "    Input video shape: " << vd.get_shape() << std::endl;
+    }
 
     for (int i = 0; i < 3; i++)
     {
@@ -193,8 +202,13 @@ int main(int argc, char *argv[])
         }
         std::cout << "    device = " << device << std::endl;
 
+        auto handwrite_img = utils::load_image("../openvino.genai/tests/python_tests/.pytest_cache/d/images/handwritten.png");
+        auto cat_img = utils::load_image("../openvino.genai/tests/python_tests/.pytest_cache/d/images/cat.jpg");
+        
         std::vector<ov::Tensor> rgbs = utils::load_images(img_video_path);
         ov::Tensor video = utils::load_video(img_video_path);
+
+        rgbs = std::vector<ov::Tensor>{cat_img, handwrite_img};
 
         std::cout << "== Start to load model: " << model_path << std::endl;
         cfg["ATTENTION_BACKEND"] = "SDPA";

@@ -32,3 +32,4 @@ export OV_CACHE=./ov_cache
 # python -m pytest ./ -s -m precommit -k test_vlm_continuous_batching_generate_vs_add_request
 # python -m pytest ./ -s -m precommit -k test_vlm_pipeline_match_optimum_preresized
 
+ gdb --args python -m pytest ./ -s -m precommit -k test_vlm_pipeline_chat_with_video

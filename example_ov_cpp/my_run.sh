@@ -7,7 +7,7 @@ source ../openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/setupvars.sh
 model_id=../models/ov/Qwen2.5-VL-3B-Instruct/INT4/
 
 # type="img"
-# video_img_path=../cat_1.jpg
+# video_img_path=../openvino.genai/tests/python_tests/.pytest_cache/d/images/handwritten.png
 
 type="video"
 video_img_path=../test_video/rsz_video
