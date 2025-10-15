@@ -3,7 +3,9 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 cd ${SCRIPT_DIR}
 
 source ./python-env/bin/activate
-source ./openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/setupvars.sh
+# source ./openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/setupvars.sh
+source ./openvino_toolkit_ubuntu22_2025.4.0.dev20250929_x86_64/setupvars.sh
+
 
 # source /mnt/xiping/gpu_profiling/openvino/build/install/setupvars.sh
 # export INSTALL_DIR=/mnt/xiping/gpu_profiling/openvino/build/install/
@@ -23,6 +25,6 @@ cd openvino.genai
 # cmake --install ./build/ --config Release --prefix ./install
 
 # Debug
-# cmake -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
-cmake --build ./build/ --config Debug -j
+cmake -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
+cmake --build ./build/ --config Debug -j 80
 cmake --install ./build/ --config Debug --prefix ./install
