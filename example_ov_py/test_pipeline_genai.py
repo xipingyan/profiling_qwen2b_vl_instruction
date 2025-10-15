@@ -12,13 +12,17 @@ ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
 print("== ov_model=", ov_model)
 device = 'GPU'
 # device = 'CPU'
-print("== device = ", device)
-pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND='SDPA')
+print("== device =", device)
+ATTENTION_BACKEND='SDPA'
+# ATTENTION_BACKEND='PA'
+print("== ATTENTION_BACKEND =", ATTENTION_BACKEND)
+pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND=ATTENTION_BACKEND)
 
 config = ov_genai.GenerationConfig()
 config.max_new_tokens = 50
+config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
 
-def load_image(image_url_or_file):
+def load_image_preresize(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
         image = Image.open(requests.get(image_url_or_file, stream=True).raw)
     else:
@@ -26,10 +30,17 @@ def load_image(image_url_or_file):
     resized_image = image.resize((448, 364), Image.Resampling.BICUBIC)
     return resized_image
 
+def load_image(image_url_or_file):
+    if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
+        image = Image.open(requests.get(image_url_or_file, stream=True).raw)
+    else:
+        image = Image.open(image_url_or_file).convert("RGB")
+    return image
+
 def load_all_images():
     imgs = []
     for idx in range(9):
-        image = load_image(f'../test_video/rsz_video/img_{idx}.png')
+        image = load_image_preresize(f'../test_video/rsz_video/img_{idx}.png')
         imgs.append(image)
     return imgs
 
@@ -42,11 +53,17 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
-    image = load_image('../test_video/img_0.png')
+    image = load_image_preresize('../test_video/rsz_0.png')
     ov_image = ov.Tensor(image)
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
 
     print(f"Question:\n  {prompt}")
+
+    result_from_streamer = []
+    def streamer(word: str) -> bool:
+        nonlocal result_from_streamer
+        result_from_streamer.append(word)
+        return False
 
     for id in range(5):
         t1 = time.time()
@@ -87,8 +104,41 @@ def test_video(as_video=True):
         print(f'== {id} time = {t2-t1:.3f} s')
     print('output = ', output)
 
+def test_images_videos():
+    print(f"== test_images_videos")
+
+    images = load_all_images()
+    video = np.stack(images, axis=0)
+
+    ov_video = ov.Tensor(video)
+    image = load_image(f'../openvino.genai/tests/python_tests/.pytest_cache/d/images/cat.jpg')
+    ov_imgs = [ov.Tensor(np.stack([image], axis=0))]
+
+    print(f"== video shape = {video.shape}")
+    print(f"== ov_imgs shape = {ov_imgs[0].data.shape}")
+    
+    prompt = "请描述这个视频："
+    print(f"Question:\n  {prompt}")
+
+    result_from_streamer=[]
+    def streamer(word: str) -> bool:
+        nonlocal result_from_streamer
+        result_from_streamer.append(word)
+        return False
+
+    pipe.start_chat("you are a helpfull assitant.")
+    for id in range(2):
+        t1 = time.time()
+        output = pipe.generate(prompt, images=ov_imgs, videos=ov_video, generation_config=config, streamer=streamer,)
+        # pipe.finish_chat()
+        t2 = time.time()
+        print(f'== {id} time = {t2-t1:.3f} s')
+    pipe.finish_chat()
+    print('output = ', output)
+
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     # test_image()
-    test_video(as_video=True)
+    test_images_videos()
+    # test_video(as_video=True)
     # test_video(as_video=False)

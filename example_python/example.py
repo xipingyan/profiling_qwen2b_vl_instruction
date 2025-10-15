@@ -12,6 +12,10 @@ from qwen_vl_utils import process_vision_info
 from PIL import Image
 import time
 
+# # bpe_tokenizer accelerate.
+# from bpe_qwen import AutoLinearTokenizer
+# tokenizer = AutoLinearTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-7B-Instruct")
+
 class Model_Qwen2_VL_2B():
     def __init__(self):
         self.__model_id = "../Qwen/Qwen2-VL-2B-Instruct"
