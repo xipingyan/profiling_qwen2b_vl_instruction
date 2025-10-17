@@ -136,6 +136,37 @@ def test_images_videos():
     pipe.finish_chat()
     print('output = ', output)
 
+import cv2
+def test_ci_case():
+    print(f"== test_ci_case")
+    num_frames = 10
+    video = cv2.VideoCapture("../test_video/spinning-earth-480.mp4")
+    total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    interval = 25
+    frames = []
+    for i in range(total_frames):
+        ret, frame = video.read()
+        pil_img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        if not ret:
+            continue
+        if i % interval == 0:
+            frames.append(pil_img)
+    video.release()
+
+    ov_video = ov.Tensor(np.stack(frames, axis=0))
+    print(f"== video shape = {ov_video.get_shape()}")
+    prompt = "What is Earth's spin and which continents are visible over time in the video? Which of them are shown on the beginning and which of them are presented on the end of the clip?"
+    print(f"Question:\n  {prompt}")
+
+    pipe.start_chat()
+    for id in range(1):
+        t1 = time.time()
+        output = pipe.generate(prompt, videos=ov_video, generation_config=config, streamer=streamer,)
+        t2 = time.time()
+        print(f'== {id} time = {t2-t1:.3f} s')
+    pipe.finish_chat()
+    print('output = ', output)
+
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     # test_image()

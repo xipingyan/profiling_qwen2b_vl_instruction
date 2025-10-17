@@ -150,6 +150,32 @@
                 "PYTHONPATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/openvino_genai:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/python/:${env:PYTHONPATH}",
                 "LD_LIBRARY_PATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python//../runtime/lib/intel64/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/runtime/lib/intel64/:${env:LD_LIBRARY_PATH}"
             }
+        },
+        {
+            "name": "PytestGenai",
+            "type": "debugpy",
+            "python": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/python-env/bin/python",
+            "request": "launch",
+            "module": "pytest",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "./",
+                "-s", // To show print statements and other stdout
+                "-m",
+                "precommit", // Marker expression
+                "-k",
+                "test_vlm_pipeline_match_optimum_preresized" // Keyword expression for test selection
+            ],
+            "cwd": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/tests/python_tests",
+            
+            "env": {
+                "HF_ENDPOINT":"https://hf-mirror.com",
+                "PYTHONPATH":"/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/python:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/python",
+                "LD_LIBRARY_PATH":"/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/runtime/lib/intel64:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/runtime/lib/intel64",
+                "OV_CACHE":"./ov_cache"
+            }
         }
     ]
 }

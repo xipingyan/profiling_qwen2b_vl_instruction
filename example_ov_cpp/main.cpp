@@ -144,40 +144,50 @@ void test_video(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> &rgbs, ov:
 
 #if 1
     std::cout << "  test_video pass 'video' + 'images' " << std::endl;
-    // std::vector<ov::Tensor> images = std::vector<ov::Tensor>{rgbs[0], rgbs[1]};
-    std::vector<ov::Tensor> images = rgbs;
-    for (auto img: images) {
-        std::cout << "    Input image shape: " << img.get_shape() << std::endl;
-    }
-    auto shape = video.get_shape();
-    auto frame_byte_size = shape[1] * shape[2] * shape[3];
-    ov::Tensor video1 = ov::Tensor(ov::element::u8, ov::Shape({3, shape[1], shape[2], shape[3]}));
-    ov::Tensor video2 = ov::Tensor(ov::element::u8, ov::Shape({6, shape[1], shape[2], shape[3]}));
-    for (int i = 0; i < 9; i++)
-    {
-        if (i < 3)
-            std::memcpy((char *)video1.data() + i * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
-        else
-            std::memcpy((char *)video2.data() + (i - 3) * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
-    }
-    std::vector<ov::Tensor> videos = {video1, video2};
-    for (auto vd : videos)
-    {
-        std::cout << "    Input video shape: " << vd.get_shape() << std::endl;
-    }
+    // std::vector<ov::Tensor> images = {rgbs[0]};
+    // for (auto img: images) {
+    //     std::cout << "    Input image shape: " << img.get_shape() << std::endl;
+    // }
+    // auto shape = video.get_shape();
+    // auto frame_byte_size = shape[1] * shape[2] * shape[3];
+    // ov::Tensor video1 = ov::Tensor(ov::element::u8, ov::Shape({3, shape[1], shape[2], shape[3]}));
+    // ov::Tensor video2 = ov::Tensor(ov::element::u8, ov::Shape({6, shape[1], shape[2], shape[3]}));
+    // for (int i = 0; i < 9; i++)
+    // {
+    //     if (i < 3)
+    //         std::memcpy((char *)video1.data() + i * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
+    //     else
+    //         std::memcpy((char *)video2.data() + (i - 3) * frame_byte_size, (char *)video.data() + frame_byte_size * i, frame_byte_size);
+    // }
+    // std::vector<ov::Tensor> videos = {video1, video2};
+  
+    // for (auto vd : videos)
+    // {
+    //     std::cout << "    Input video shape: " << vd.get_shape() << std::endl;
+    // }
 
-    for (int i = 0; i < 3; i++)
+    std::vector<ov::Tensor> images = {ov::Tensor(ov::element::u8, ov::Shape({1, 32, 32, 3}))};
+    std::vector<ov::Tensor> videos = {ov::Tensor(ov::element::u8, ov::Shape({10, 32, 32, 3}))};
+    memset(images[0].data(), 0, images[0].get_byte_size());
+    memset(videos[0].data(), 0, videos[0].get_byte_size());
+
+    // pipe.start_chat("");
+    // pipe.generate("What is on the image?",
+    //     ov::genai::images(images),
+    //     ov::genai::videos(videos),
+    //     ov::genai::generation_config(generation_config));
+
+    for (int i = 0; i < 1; i++)
     {
-        pipe.start_chat();
         std::cout << "  Loop: [" << i << "] " << std::endl;
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto aa = pipe.generate(prompt,
+        auto aa = pipe.generate("What is special about this image?",
                                 ov::genai::images(images),
                                 ov::genai::videos(videos),
                                 ov::genai::generation_config(generation_config));
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "      result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
-        pipe.finish_chat();
+        // pipe.finish_chat();
     }
 #endif
 }
@@ -212,6 +222,7 @@ int main(int argc, char *argv[])
 
         std::cout << "== Start to load model: " << model_path << std::endl;
         cfg["ATTENTION_BACKEND"] = "SDPA";
+        // cfg["ATTENTION_BACKEND"] = "PA";
         ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
         if (input_video)
