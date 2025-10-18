@@ -1,10 +1,10 @@
-SCRIPT_DIR="$(dirname "$(readlink -f "$BASH_SOURCE")")"
-cd ${SCRIPT_DIR}
+SCRIPT_DIR_EXAMPLE_OV_CPP="$(dirname "$(readlink -f "$BASH_SOURCE")")"
+cd ${SCRIPT_DIR_EXAMPLE_OV_CPP}
 
 source ../python-env/bin/activate
 source ../source_ov.sh
 
-cd ${SCRIPT_DIR}
+cd ${SCRIPT_DIR_EXAMPLE_OV_CPP}
 
 mkdir -p build
 cd build

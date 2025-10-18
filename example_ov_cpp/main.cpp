@@ -192,11 +192,80 @@ void test_video(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> &rgbs, ov:
 #endif
 }
 
+#include <openvino/genai/continuous_batching_pipeline.hpp>
+int test_cb_add_request_vs_vlm()
+{
+    auto cat_img = utils::load_image("../openvino.genai/tests/python_tests/.pytest_cache/d/images/cat.jpg");
+    std::string img_video_path = "../test_video/rsz_video/";
+    std::string model_path = "../openvino.genai/tests/python_tests/ov_cache/20251015/optimum-intel-1.25.2_transformers-4.53.3/test_models/katuni4ka_tiny-random-qwen2vl";
+    // model_path = "../openvino.genai/tests/python_tests/ov_cache/20251015/optimum-intel-1.25.2_transformers-4.53.3/test_models/katuni4ka_tiny-random-qwen2.5-vl";
+    
+    std::vector<ov::Tensor> images = {cat_img};
+    ov::Tensor video = utils::load_video(img_video_path);
+    std::vector<ov::Tensor> videos = {video};
+
+    std::string device = "CPU";
+    std::string prompts = "Please describe this video and image.";
+
+    std::cout << "== Start to load model: " << model_path << std::endl;
+    ov::AnyMap cfg;
+    cfg["ATTENTION_BACKEND"] = "SDPA";
+    // cfg["ATTENTION_BACKEND"] = "PA";
+    ov::genai::VLMPipeline ov_pipe(model_path, device, cfg);
+
+    ov::genai::GenerationConfig generation_config;
+    generation_config.max_new_tokens = 30;
+
+    std::vector<std::vector<ov::Tensor>> images_vec = {{}, images};
+    // std::vector<std::vector<ov::Tensor>> images_vec = {{}};
+    std::vector<std::string> res_vlm_vec;
+    for (int i = 0; i < images_vec.size(); i++) {
+        auto res_vlm_1 = ov_pipe.generate(prompts, ov::genai::images(images_vec[i]), ov::genai::videos(videos), ov::genai::generation_config(generation_config));
+        res_vlm_vec.push_back(res_vlm_1.texts[0]);
+    }
+
+    auto scheduler_config = ov::genai::SchedulerConfig();
+    auto cb_pipe = ov::genai::ContinuousBatchingPipeline(
+        model_path,
+        scheduler_config,
+        device);
+    auto tokenizer = cb_pipe.get_tokenizer();
+
+    std::vector<std::string> res_cb_vec;
+    for (int i = 0; i < images_vec.size(); i++) {
+        auto handle = cb_pipe.add_request(i, prompts, images_vec[i], videos, generation_config);
+        while (handle->get_status() != ov::genai::GenerationStatus::FINISHED)
+            cb_pipe.step();
+    
+        auto outputs = handle->read_all();
+    
+        auto res_cb_pipeline = tokenizer.decode(outputs[0].generated_ids);
+        res_cb_vec.push_back(res_cb_pipeline);
+    }
+
+    for (int i = 0; i < images_vec.size(); i++) {
+        auto cmp_rslt = res_cb_vec[i].compare(res_vlm_vec[i].c_str());
+        std::cout << "cmp_result [" << i << "] : " << cmp_rslt << std::endl;
+        if (cmp_rslt != 0)
+        {
+            
+            std::cout << "    =============================" << std::endl;
+            std::cout << "    rslt_vlm = " << res_vlm_vec[i] << std::endl;
+            std::cout << "    *****************************" << std::endl;
+            std::cout << "    rslt_cb  = " << res_cb_vec[i] << std::endl;
+            std::cout << "    =============================" << std::endl;
+        }
+    }
+    
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
         // return test_llm_lookup(argc, argv);
+        return test_cb_add_request_vs_vlm();
 
         std::string img_video_path = "../../cat_1.jpg";
         std::string model_path = "../../ov_model_i8/";

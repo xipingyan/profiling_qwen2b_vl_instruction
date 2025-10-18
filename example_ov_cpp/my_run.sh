@@ -1,10 +1,10 @@
-SCRIPT_DIR="$(dirname "$(readlink -f "$BASH_SOURCE")")"
-cd ${SCRIPT_DIR}
+SCRIPT_DIR_EXAMPLE_OV_CPP_RUN="$(dirname "$(readlink -f "$BASH_SOURCE")")"
+cd ${SCRIPT_DIR_EXAMPLE_OV_CPP_RUN}
 
 source ../python-env/bin/activate
 source ../source_ov.sh
 
-cd ${SCRIPT_DIR}
+cd ${SCRIPT_DIR_EXAMPLE_OV_CPP_RUN}
 
 model_id=../models/ov/Qwen2.5-VL-3B-Instruct/INT4/
 model_id=../openvino.genai/tests/python_tests/ov_cache/20251015/optimum-intel-1.25.2_transformers-4.53.3/test_models/katuni4ka_tiny-random-qwen2.5-vl/
