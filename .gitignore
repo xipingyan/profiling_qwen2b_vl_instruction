@@ -16,9 +16,7 @@ exec_graph.xml
 onetrace.429373.json
 ov_model_zaixing
 tmp_nightly
-openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64*
-openvino_toolkit_ubuntu22_2025.2.0.19140.c01cd93e24d_x86_64*
-openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64*
+
 frameworks.ai.openvino.ci.product-configs
 Qwen2-VL-2B-Instruct/
 Qwen2-VL-2B-Instruct_video/
@@ -37,4 +35,5 @@ example_ov_py/ov_venv
 
 katuni4ka
 openvino_tokenizers_ubuntu24_*
+openvino_toolkit_ubuntu*
 docs

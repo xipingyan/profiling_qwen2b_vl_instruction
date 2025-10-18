@@ -3,9 +3,9 @@ SCRIPT_RUN_GENAI_PYTEST_DIR="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 cd ${SCRIPT_RUN_GENAI_PYTEST_DIR}
 
 source ./python-env/bin/activate
-# openvino_tokenizer: 
 # pip install --pre -U openvino openvino-tokenizers==2025.4.0.0.dev20250929 --extra-index-url https://storage.openvinotoolkit.org/simple/wheels/nightly
-source ./openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/setupvars.sh
+source ./source_ov.sh
+cd ${SCRIPT_RUN_GENAI_PYTEST_DIR}
 
 # source /mnt/xiping/gpu_profiling/openvino/build/install/setupvars.sh
 # export INSTALL_DIR=/mnt/xiping/gpu_profiling/openvino/build/install/
@@ -30,6 +30,6 @@ cd openvino.genai/tests/python_tests
 export OV_CACHE=./ov_cache
 # python -m pytest ./ -s -m precommit -k test_vlm_pipeline_video_input
 # python -m pytest ./ -s -m precommit -k test_vlm_continuous_batching_generate_vs_add_request
-# python -m pytest ./ -s -m precommit -k test_vlm_pipeline_match_optimum_preresized
+python -m pytest ./ -s -m precommit -k test_vlm_pipeline_match_optimum_preresized
 
- gdb --args python -m pytest ./ -s -m precommit -k test_vlm_pipeline_chat_with_video
+#  gdb --args python -m pytest ./ -s -m precommit -k test_vlm_pipeline_chat_with_video
