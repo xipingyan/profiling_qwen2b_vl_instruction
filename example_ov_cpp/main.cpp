@@ -304,7 +304,7 @@ int test_chat_with_video_image() {
         std::cout << "== Init ov_pipe.generate 2" << std::endl;
         ov_pipe.finish_chat();
     }
-
+    std::cout << "== Done " << std::endl;
     return 1;
 }
 
