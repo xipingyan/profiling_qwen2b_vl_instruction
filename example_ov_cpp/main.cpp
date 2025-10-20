@@ -260,12 +260,61 @@ int test_cb_add_request_vs_vlm()
     return EXIT_SUCCESS;
 }
 
+int test_chat_with_video_image() {
+    std::cout << "== Start test_chat_with_video_image" << std::endl;
+
+	std::vector<std::string> system_message = { "", "You are a helpful assistant." };
+    std::string models_path = "C:\\Users\\openvino-ci-88\\xiping\\profiling_qwen2b_vl_instruction\\katuni4ka\\tiny-random-qwen2.5-vl\\INT4";
+    std::vector<std::string> attention_backend = { "PA", "SDPA" };
+
+    auto img = ov::Tensor(ov::element::u8, ov::Shape({ 1, 128, 128, 3 }));
+    auto video = ov::Tensor(ov::element::u8, ov::Shape({ 10, 32, 32, 3 }));
+
+    ov::AnyMap cfg;
+    cfg["ATTENTION_BACKEND"] = attention_backend[0];
+    auto ov_pipe = ov::genai::VLMPipeline(models_path, "CPU", cfg);
+    std::cout << "== Init ov_pipeline" << std::endl;
+    auto generation_config = ov_pipe.get_generation_config();
+    generation_config.max_new_tokens = 30;
+    generation_config.set_eos_token_id(ov_pipe.get_tokenizer().get_eos_token_id());
+
+    ov_pipe.start_chat(system_message[0]);
+    std::cout << "== Init ov_pipe.start_chat" << std::endl;
+
+    auto iteration_images = std::vector<ov::Tensor>{ img };
+    auto iteration_videos = std::vector<ov::Tensor>{ video };
+
+    auto images = iteration_images;
+    auto videos = iteration_videos;
+
+    auto res = ov_pipe.generate(
+        "What is special on this video and image?",
+        ov::genai::images(images), 
+        ov::genai::videos(videos), ov::genai::generation_config(generation_config)
+    );
+    std::cout << "== Init ov_pipe.generate" << std::endl;
+      
+    for (size_t idx = 0; idx < 1; idx++) {
+        res = ov_pipe.generate(
+            "3 images + video on first iteration, video on second iteration",
+            ov::genai::images(images),
+            ov::genai::videos(videos),
+            ov::genai::generation_config(generation_config)
+            );
+        std::cout << "== Init ov_pipe.generate 2" << std::endl;
+        ov_pipe.finish_chat();
+    }
+
+    return 1;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
         // return test_llm_lookup(argc, argv);
-        return test_cb_add_request_vs_vlm();
+        // return test_cb_add_request_vs_vlm();
+        return test_chat_with_video_image();
 
         std::string img_video_path = "../../cat_1.jpg";
         std::string model_path = "../../ov_model_i8/";

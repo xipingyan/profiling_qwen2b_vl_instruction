@@ -37,7 +37,7 @@ ov::Tensor utils::load_video(const std::filesystem::path& input_path) {
 
     auto stride = rgbs[0].get_byte_size();
     std::cout << "stride = " << stride << std::endl;
-    auto dst = video.data();
+    auto dst = reinterpret_cast<char*>(video.data());
     int b = 0;
     for (auto rgb : rgbs)
     {
@@ -53,7 +53,7 @@ ov::Tensor utils::create_countdown_frames()
 {
     int frames_count = 5, height = 240, width = 360;
     auto video = ov::Tensor(ov::element::u8,
-                            ov::Shape{frames_count, height, width, 3});
+                            ov::Shape{(size_t)frames_count, (size_t)height, (size_t)width, 3});
 
     for (int i = frames_count; i > 0; i--)
     {
@@ -94,7 +94,7 @@ ov::Tensor utils::create_countdown_frames()
         );
 
         int idx = frames_count - i;
-        std::memcpy(video.data() + idx * height * width * 3, frame.data, height * width * 3);
+        std::memcpy((char*)video.data() + idx * height * width * 3, frame.data, height * width * 3);
 
         // cv::imshow("Centered Text Frame", frame);
         // cv::waitKey(0);
