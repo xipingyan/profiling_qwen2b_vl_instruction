@@ -265,6 +265,9 @@ int test_chat_with_video_image() {
 
 	std::vector<std::string> system_message = { "", "You are a helpful assistant." };
     std::string models_path = "C:\\Users\\openvino-ci-88\\xiping\\profiling_qwen2b_vl_instruction\\katuni4ka\\tiny-random-qwen2.5-vl\\INT4";
+#ifndef _WIN32
+    models_path = "../openvino.genai/tests/python_tests/ov_cache/20251015/optimum-intel-1.25.2_transformers-4.53.3/test_models/katuni4ka_tiny-random-qwen2vl/";
+#endif
     std::vector<std::string> attention_backend = { "PA", "SDPA" };
 
     auto img = ov::Tensor(ov::element::u8, ov::Shape({ 1, 128, 128, 3 }));
