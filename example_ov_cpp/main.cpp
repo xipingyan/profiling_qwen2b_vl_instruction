@@ -284,11 +284,11 @@ int test_chat_with_video_image() {
     ov_pipe.start_chat(system_message[0]);
     std::cout << "== Init ov_pipe.start_chat" << std::endl;
 
-    auto iteration_images = std::vector<ov::Tensor>{ img };
-    auto iteration_videos = std::vector<ov::Tensor>{ video };
+    auto iteration_images = std::vector<std::vector<ov::Tensor>>{{ img }, {}, {}};
+    auto iteration_videos = std::vector<std::vector<ov::Tensor>>{{ video },{},{ video }};
 
-    auto images = iteration_images;
-    auto videos = iteration_videos;
+    auto images = iteration_images[0];
+    auto videos = iteration_videos[0];
 
     auto res = ov_pipe.generate(
         "What is special on this video and image?",
@@ -297,15 +297,17 @@ int test_chat_with_video_image() {
     );
     std::cout << "== Init ov_pipe.generate" << std::endl;
       
-    for (size_t idx = 0; idx < 1; idx++) {
+    for (size_t idx = 1; idx < iteration_images.size(); idx++) {
+        std::cout << "== idx = " << idx << std::endl;
         res = ov_pipe.generate(
             "3 images + video on first iteration, video on second iteration",
-            ov::genai::images(images),
-            ov::genai::videos(videos),
+            ov::genai::images(iteration_images[idx]),
+            ov::genai::videos(iteration_videos[idx - 1]),
             ov::genai::generation_config(generation_config)
             );
-        std::cout << "== Init ov_pipe.generate 2" << std::endl;
+        std::cout << "== idx = " << idx << " done." << std::endl;
         ov_pipe.finish_chat();
+        std::cout << "== idx = " << idx << " finish_chat done." << std::endl;
     }
     std::cout << "== Done " << std::endl;
     return 1;
