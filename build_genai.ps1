@@ -7,13 +7,13 @@
 . ..\openvino\build\install\setupvars.ps1
 
 cd openvino.genai
-# cmake -DCMAKE_BUILD_TYPE=Release -S ./ -B ./build/
-# cmake --build ./build/ --config Release -j 200
-# cmake --install ./build/ --config Release --prefix ./install
+cmake -DCMAKE_BUILD_TYPE=Release -DOpenVINO_DIR=C:\Users\openvino-ci-88\xiping\openvino\build -DENABLE_PYTHON_PACKAGING=ON -S ./ -B ./build/
+cmake --build ./build/ --config Release -j 96
+cmake --install ./build/ --config Release --prefix ./install
 
 # Debug
 # cmake -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
-cmake --build ./build/ --config Debug -j 80
-cmake --install ./build/ --config Debug --prefix ./install
+# cmake --build ./build/ --config Debug -j 80
+# cmake --install ./build/ --config Debug --prefix ./install
 
 cd ..
