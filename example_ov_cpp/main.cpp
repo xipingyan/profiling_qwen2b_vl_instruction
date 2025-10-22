@@ -276,14 +276,15 @@ int test_chat_with_video_image() {
 
     ov::AnyMap cfg;
     cfg["ATTENTION_BACKEND"] = attention_backend[0];
+    std::cout << "== Init ov_pipeline, ATTENTION_BACKEND = " << cfg["ATTENTION_BACKEND"].as<std::string>() << std::endl;
     auto ov_pipe = ov::genai::VLMPipeline(models_path, "CPU", cfg);
-    std::cout << "== Init ov_pipeline" << std::endl;
+    
     auto generation_config = ov_pipe.get_generation_config();
     generation_config.max_new_tokens = 30;
     generation_config.set_eos_token_id(ov_pipe.get_tokenizer().get_eos_token_id());
 
-    ov_pipe.start_chat(system_message[0]);
     std::cout << "== Init ov_pipe.start_chat" << std::endl;
+    ov_pipe.start_chat(system_message[0]);
 
     auto iteration_images = std::vector<std::vector<ov::Tensor>>{{ img }, {}, {}};
     auto iteration_videos = std::vector<std::vector<ov::Tensor>>{{ video },{},{ video }};
@@ -291,22 +292,24 @@ int test_chat_with_video_image() {
     auto images = iteration_images[0];
     auto videos = iteration_videos[0];
 
+    std::cout << "== First ov_pipe.generate" << std::endl;
     auto res = ov_pipe.generate(
         "What is on the image?",
         ov::genai::images(images), 
         ov::genai::videos(videos), ov::genai::generation_config(generation_config)
     );
-    std::cout << "== Init ov_pipe.generate" << std::endl;
       
     for (size_t idx = 1; idx < iteration_images.size(); idx++) {
         std::cout << "== idx = " << idx << std::endl;
+        std::cout << "  == iteration_images[idx].size() = " << iteration_images[idx].size() << std::endl;
+        std::cout << "  == iteration_videos[idx - 1].size() = " << iteration_videos[idx - 1].size() << std::endl;
         res = ov_pipe.generate(
             "What is special about this image?",
             ov::genai::images(iteration_images[idx]),
             ov::genai::videos(iteration_videos[idx - 1]),
             ov::genai::generation_config(generation_config)
             );
-        std::cout << "== idx = " << idx << " finish_chat done." << std::endl;
+        std::cout << "  == idx = " << idx << " finish_chat done." << std::endl;
     }
     ov_pipe.finish_chat();
     std::cout << "== Done " << std::endl;
