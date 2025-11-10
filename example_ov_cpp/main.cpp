@@ -260,12 +260,69 @@ int test_cb_add_request_vs_vlm()
     return EXIT_SUCCESS;
 }
 
+int test_chat_with_video_image() {
+    std::cout << "== Start test_chat_with_video_image" << std::endl;
+
+	std::vector<std::string> system_message = { "", "You are a helpful assistant." };
+    std::string models_path = "C:\\Users\\openvino-ci-88\\xiping\\profiling_qwen2b_vl_instruction\\katuni4ka\\tiny-random-qwen2.5-vl\\INT4";
+    models_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\openvino.genai\\tests\\python_tests\\ov_cache\\20251022\\optimum-intel-1.26.0.dev0+04db016_transformers-4.53.3\\test_models\\katuni4ka\\tiny-random-qwen2vl";
+#ifndef _WIN32
+    models_path = "../openvino.genai/tests/python_tests/ov_cache/20251015/optimum-intel-1.25.2_transformers-4.53.3/test_models/katuni4ka_tiny-random-qwen2vl/";
+#endif
+    std::vector<std::string> attention_backend = { "PA", "SDPA" };
+
+    auto img = ov::Tensor(ov::element::u8, ov::Shape({ 667,1000,3 }));
+    auto video = ov::Tensor(ov::element::u8, ov::Shape({ 10, 32, 32, 3 }));
+
+    ov::AnyMap cfg;
+    cfg["ATTENTION_BACKEND"] = attention_backend[0];
+    std::cout << "== Init ov_pipeline, ATTENTION_BACKEND = " << cfg["ATTENTION_BACKEND"].as<std::string>() << std::endl;
+    auto ov_pipe = ov::genai::VLMPipeline(models_path, "CPU", cfg);
+    
+    auto generation_config = ov_pipe.get_generation_config();
+    generation_config.max_new_tokens = 30;
+    generation_config.set_eos_token_id(ov_pipe.get_tokenizer().get_eos_token_id());
+
+    std::cout << "== Init ov_pipe.start_chat" << std::endl;
+    ov_pipe.start_chat(system_message[0]);
+
+    auto iteration_images = std::vector<std::vector<ov::Tensor>>{{ img }, {}, {}};
+    auto iteration_videos = std::vector<std::vector<ov::Tensor>>{{ video },{},{ video }};
+
+    auto images = iteration_images[0];
+    auto videos = iteration_videos[0];
+
+    std::cout << "== First ov_pipe.generate" << std::endl;
+    auto res = ov_pipe.generate(
+        "What is on the image?",
+        ov::genai::images(images), 
+        ov::genai::videos(videos), ov::genai::generation_config(generation_config)
+    );
+      
+    for (size_t idx = 1; idx < iteration_images.size(); idx++) {
+        std::cout << "== idx = " << idx << std::endl;
+        std::cout << "  == iteration_images[idx].size() = " << iteration_images[idx].size() << std::endl;
+        std::cout << "  == iteration_videos[idx - 1].size() = " << iteration_videos[idx - 1].size() << std::endl;
+        res = ov_pipe.generate(
+            "What is special about this image?",
+            ov::genai::images(iteration_images[idx]),
+            ov::genai::videos(iteration_videos[idx - 1]),
+            ov::genai::generation_config(generation_config)
+            );
+        std::cout << "  == idx = " << idx << " finish_chat done." << std::endl;
+    }
+    ov_pipe.finish_chat();
+    std::cout << "== Done " << std::endl;
+    return 1;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
         // return test_llm_lookup(argc, argv);
-        return test_cb_add_request_vs_vlm();
+        // return test_cb_add_request_vs_vlm();
+        return test_chat_with_video_image();
 
         std::string img_video_path = "../../cat_1.jpg";
         std::string model_path = "../../ov_model_i8/";

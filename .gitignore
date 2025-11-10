@@ -35,5 +35,5 @@ example_ov_py/ov_venv
 
 katuni4ka
 openvino_tokenizers_ubuntu24_*
-openvino_toolkit_ubuntu*
+openvino_toolkit_*
 docs
