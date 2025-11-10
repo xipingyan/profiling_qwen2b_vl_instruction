@@ -12,7 +12,7 @@ cd models
 model_id='katuni4ka/tiny-random-minicpmv-2_6'
 
 # Refer: https://hf-mirror.com/
-# export HF_ENDPOINT=https://hf-mirror.com
+export HF_ENDPOINT=https://hf-mirror.com
 # huggingface-cli download --token [your token] --resume-download $model_id --local-dir $model_id
 
 # compress to int4
