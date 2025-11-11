@@ -1,26 +1,26 @@
 import openvino_genai as ov_genai
-from pathlib import Path
 import requests
 from PIL import Image
-from io import BytesIO
 import numpy as np
 import openvino as ov
 import time
 
-ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
+def get_pipeline():
+    ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
 
-print("== ov_model=", ov_model)
-device = 'GPU'
-# device = 'CPU'
-print("== device =", device)
-ATTENTION_BACKEND='SDPA'
-# ATTENTION_BACKEND='PA'
-print("== ATTENTION_BACKEND =", ATTENTION_BACKEND)
-pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND=ATTENTION_BACKEND)
+    print("== ov_model=", ov_model)
+    device = 'GPU'
+    # device = 'CPU'
+    print("== device =", device)
+    ATTENTION_BACKEND='SDPA'
+    # ATTENTION_BACKEND='PA'
+    print("== ATTENTION_BACKEND =", ATTENTION_BACKEND)
+    pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND=ATTENTION_BACKEND)
 
-config = ov_genai.GenerationConfig()
-config.max_new_tokens = 50
-config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
+    config = ov_genai.GenerationConfig()
+    config.max_new_tokens = 50
+    config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
+    return pipe
 
 def load_image_preresize(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -53,6 +53,7 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
+    pipeline = get_pipeline()
     image = load_image_preresize('../test_video/rsz_0.png')
     ov_image = ov.Tensor(image)
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
@@ -76,6 +77,7 @@ def test_image():
 
 def test_video(as_video=True):
     print(f"== test video. as_video={as_video}")
+    pipeline = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -106,6 +108,7 @@ def test_video(as_video=True):
 
 def test_images_videos():
     print(f"== test_images_videos")
+    pipeline = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -139,6 +142,7 @@ def test_images_videos():
 import cv2
 def test_ci_case():
     print(f"== test_ci_case")
+    pipeline = get_pipeline()
     num_frames = 10
     video = cv2.VideoCapture("../test_video/spinning-earth-480.mp4")
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -167,9 +171,26 @@ def test_ci_case():
     pipe.finish_chat()
     print('output = ', output)
 
+def test_add_extension():
+    ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
+    print("== ov_model=", ov_model)
+
+    import platform, os, openvino_tokenizers
+    os_name = platform.system()
+    if os_name == "Windows":
+        ov_tokenizer_path = os.path.dirname(openvino_tokenizers.__file__) + "\\lib\\openvino_tokenizers.dll"
+    elif os_name == "Linux":
+        ov_tokenizer_path = os.path.dirname(openvino_tokenizers.__file__) + "/lib/libopenvino_tokenizers.so"
+    else:
+        print(f"Skipped. Current test only support Windows and Linux")
+        return
+
+    pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS":"/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"}})
+
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     # test_image()
-    test_images_videos()
+    # test_images_videos()
     # test_video(as_video=True)
     # test_video(as_video=False)
+    test_add_extension()
