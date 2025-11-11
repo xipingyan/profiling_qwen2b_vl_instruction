@@ -185,7 +185,7 @@ def test_add_extension():
         print(f"Skipped. Current test only support Windows and Linux")
         return
 
-    pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS":"/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"}})
+    pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS": ["/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"]}})
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())

@@ -316,13 +316,38 @@ int test_chat_with_video_image() {
     return 1;
 }
 
+int test_vlm_add_extension() {
+    std::cout << "== Start test_vlm_add_extension" << std::endl;
+
+	std::vector<std::string> system_message = { "", "You are a helpful assistant." };
+    std::string models_path = "C:\\Users\\openvino-ci-88\\xiping\\profiling_qwen2b_vl_instruction\\katuni4ka\\tiny-random-qwen2.5-vl\\INT4";
+    models_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\openvino.genai\\tests\\python_tests\\ov_cache\\20251022\\optimum-intel-1.26.0.dev0+04db016_transformers-4.53.3\\test_models\\katuni4ka\\tiny-random-qwen2vl";
+#ifndef _WIN32
+    models_path = "../openvino.genai/tests/python_tests/ov_cache/20251028/optimum-intel-1.25.2_transformers-4.52.4/test_models/katuni4ka_tiny-random-qwen2vl/";
+#endif
+
+    ov::AnyMap cfg;
+    // cfg["EXTENSIONS"] = std::vector<std::string>{"/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"};
+    cfg["EXTENSIONS"] = std::vector<std::string>{"fake_path"};
+    try
+    {
+        auto ov_pipe = ov::genai::VLMPipeline(models_path, "CPU", cfg);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
         // return test_llm_lookup(argc, argv);
         // return test_cb_add_request_vs_vlm();
-        return test_chat_with_video_image();
+        // return test_chat_with_video_image();
+        return test_vlm_add_extension();
 
         std::string img_video_path = "../../cat_1.jpg";
         std::string model_path = "../../ov_model_i8/";
