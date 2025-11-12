@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "load_image.hpp"
+#include "my_utils.hpp"
 #include <openvino/genai/visual_language/pipeline.hpp>
 #include <filesystem>
 #include <chrono>
@@ -11,76 +12,57 @@ bool print_subword(std::string &&subword)
     return !(std::cout << subword << std::flush);
 }
 
-void pasre_params(int argc, char *argv[], std::string &model_path, bool &input_video, std::string &img_video_path, std::string &device)
+void test_images(const CTestParam &param, ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> rgbs)
 {
-    auto help_fun = std::runtime_error(std::string{"Usage "} + argv[0] + " <MODEL_DIR> <video/img> <IMAGE_FILE OR DIR_WITH_IMAGES> <device>");
-
-    if (argc == 1)
-    {
-        throw help_fun;
-    }
-
-    if (2 == argc && std::string(argv[1]) == std::string("-h"))
-    {
-        throw help_fun;
-    }
-
-    if (3 <= argc)
-    {
-        input_video = std::string(argv[2]) == "video";
-    }
-
-    if (4 <= argc)
-    {
-        img_video_path = argv[3];
-    }
-    if (5 <= argc)
-    {
-        device = argv[4];
-    }
-
-    model_path = argv[1];
-    std::cout << "== Params:" << std::endl;
-    std::cout << "    model_path = " << model_path << std::endl;
-    std::cout << "    input_video = " << input_video << std::endl;
-    std::cout << "    img_video_path = " << img_video_path << std::endl;
-    std::cout << "    device = " << device << std::endl;
-}
-
-void test_images(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> rgbs)
-{
+    std::cout << "== Start test_images..." << std::endl;
     ov::genai::GenerationConfig generation_config;
     generation_config.max_new_tokens = 100;
 
-    std::string prompt = "你是一位图像内容理解专家，能够理解图像内容和文字描述的关系，并输出图片和文字描述的相似度。\
-    请遵守以下规则：\
-    1、输出得分值范围[0,1)。\
-    2、只输出得分值。\
-    3、最多输出3位小数。\
-文字内容为：小猫。";
-    prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小猫。\"是否相关？";
-    std::string prompt2 = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？";
+    std::string prompt = param.prompt;
+    std::vector<std::string> prompt_vec;
+    if (param.prompt.empty())
+    {
+        prompt = "你是一位图像内容理解专家，能够理解图像内容和文字描述的关系，并输出图片和文字描述的相似度。\
+                    请遵守以下规则：\
+                    1、输出得分值范围[0,1)。\
+                    2、只输出得分值。\
+                    3、最多输出3位小数。\
+                文字内容为：小猫。";
+        prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小猫。\"是否相关？";
+        std::string prompt2 = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？";
+        prompt_vec.push_back(prompt);
+        // prompt_vec.push_back(prompt2);
+    }else {
+        prompt_vec.push_back(prompt);
+        prompt_vec.push_back("how many chairs in this image?");
+    }
+
+    // only first loop input images.
+    std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
+    images_vec[0] = rgbs;
 
     // std::cout << "question:\n";
     // std::getline(std::cin, prompt);
-    std::cout << "prompt: " << prompt << std::endl;
-    for (int i = 0; i < 5; i++)
+    for (int l = 0; l < 1; l++)
     {
+        std::cout << "Loop: [" << l << "] " << std::endl;
         pipe.start_chat();
-        std::cout << "Loop: [" << i << "] ";
-        auto t1 = std::chrono::high_resolution_clock::now();
-        auto real_prompt = i % 2 == 0 ? prompt : prompt2;
-        auto aa = pipe.generate(real_prompt,
-                                ov::genai::images(rgbs),
-                                ov::genai::generation_config(generation_config),
-                                ov::genai::streamer(print_subword));
-        auto t2 = std::chrono::high_resolution_clock::now();
-        std::cout << ", result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
-        pipe.finish_chat();
+        for (int i = 0; i < prompt_vec.size(); i++)
+        {
+            auto t1 = std::chrono::high_resolution_clock::now();
+            auto aa = pipe.generate(prompt_vec[i],
+                                    ov::genai::images(images_vec[i]),
+                                    ov::genai::generation_config(generation_config)
+                                    // ov::genai::streamer(print_subword)
+                                );
+            auto t2 = std::chrono::high_resolution_clock::now();
+            std::cout << "result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+           
+        } pipe.finish_chat();
     }
 }
 
-void test_video(ov::genai::VLMPipeline &pipe, std::vector<ov::Tensor> &rgbs, ov::Tensor &video)
+void test_video(const CTestParam &param, ov::genai::VLMPipeline &pipe, const std::vector<ov::Tensor> &rgbs, ov::Tensor &video)
 {
     ov::genai::GenerationConfig generation_config;
     // generation_config.max_new_tokens = 2048;
@@ -347,54 +329,36 @@ int main(int argc, char *argv[])
         // return test_llm_lookup(argc, argv);
         // return test_cb_add_request_vs_vlm();
         // return test_chat_with_video_image();
-        return test_vlm_add_extension();
+        // return test_vlm_add_extension();
+        auto param = CTestParam();
+        param.pasre_params(argc, argv);
 
-        std::string img_video_path = "../../cat_1.jpg";
-        std::string model_path = "../../ov_model_i8/";
-        bool input_video = true;
-        std::string device = "GPU";
-
-        pasre_params(argc, argv, model_path, input_video, img_video_path, device);
         ov::AnyMap cfg;
-        if (device == "GPU")
+        if (param.device == "GPU")
         {
             cfg.insert({ov::cache_dir("vlm_cache")});
             std::cout << "    cfg vlm_cache = " << "vlm_cache" << std::endl;
         }
-        std::cout << "    device = " << device << std::endl;
 
-        auto handwrite_img = utils::load_image("../openvino.genai/tests/python_tests/.pytest_cache/d/images/handwritten.png");
-        auto cat_img = utils::load_image("../openvino.genai/tests/python_tests/.pytest_cache/d/images/cat.jpg");
-        
-        std::vector<ov::Tensor> rgbs = utils::load_images(img_video_path);
-        ov::Tensor video = utils::load_video(img_video_path);
-
-        rgbs = std::vector<ov::Tensor>{cat_img, handwrite_img};
-
-        std::cout << "== Start to load model: " << model_path << std::endl;
         cfg["ATTENTION_BACKEND"] = "SDPA";
         // cfg["ATTENTION_BACKEND"] = "PA";
-        ov::genai::VLMPipeline pipe(model_path, device, cfg);
+        std::cout << "== Init VLMPipeline" << std::endl;
+        ov::genai::VLMPipeline pipe(param.model_path, param.device, cfg);
 
-        if (input_video)
+        if (param.input_video)
         {
-            test_video(pipe, rgbs, video);
+            ov::Tensor video = utils::load_video(param.img_video_path);
+            test_video(param, pipe, {}, video);
         }
         else
         {
-            test_images(pipe, rgbs);
+            auto images = utils::load_images(param.img_video_path);
+            test_images(param, pipe, images);
         }
     }
     catch (const std::exception &error)
     {
-        try
-        {
-            std::cerr << error.what() << '\n';
-        }
-        catch (const std::ios_base::failure &)
-        {
-        }
-        return EXIT_FAILURE;
+        std::cerr << "Catch exceptions: " << error.what() << '\n';
     }
     return EXIT_SUCCESS;
 }
