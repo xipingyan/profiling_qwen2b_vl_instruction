@@ -72,6 +72,10 @@
                 //     "name": "IMAGE_PREPROCESS",
                 //     "value": "CPP"
                 // }
+                {
+                    "name": "LOOKUP",
+                    "value": "0"
+                }
             ],
             "externalConsole": false,
             "MIMode": "gdb",

@@ -89,20 +89,22 @@ int test_vllm_lookup(int argc, char* argv[]) {
         config.max_ngram_size = 3;
     }
 
-    ov::genai::VLMPipeline pipe(model_path, device, ov::genai::prompt_lookup(enable_look_up));
-    pipe.set_generation_config(config);
+    ov::AnyMap cfg;
+    // cfg["ATTENTION_BACKEND"] = "SDPA";
+    cfg["ATTENTION_BACKEND"] = "PA";
+    // cfg["prompt_lookup"] = enable_look_up;
+
+    ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
     auto images = utils::load_images("../test_video/rsz_0.png");
 
     for (size_t i = 0;i < 1; i++) {
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto outputs = pipe.generate("What is the capital of China?", ov::genai::image(images[0]));
+        auto outputs = pipe.generate("What is the capital of China?", ov::genai::image(images[0]), ov::genai::generation_config(config));
         auto t2 = std::chrono::high_resolution_clock::now();
         // pipe.finish_chat();
         std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms, " << outputs << '\n';
     }
     return 0;
 }
-
-
