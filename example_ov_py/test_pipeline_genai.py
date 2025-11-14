@@ -20,7 +20,7 @@ def get_pipeline():
     config = ov_genai.GenerationConfig()
     config.max_new_tokens = 50
     config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
-    return pipe
+    return pipe, config
 
 def load_image_preresize(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -53,7 +53,7 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
-    pipeline = get_pipeline()
+    pipeline, config = get_pipeline()
     image = load_image_preresize('../test_video/rsz_0.png')
     ov_image = ov.Tensor(image)
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
@@ -77,7 +77,7 @@ def test_image():
 
 def test_video(as_video=True):
     print(f"== test video. as_video={as_video}")
-    pipeline = get_pipeline()
+    pipe, config = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -108,7 +108,7 @@ def test_video(as_video=True):
 
 def test_images_videos():
     print(f"== test_images_videos")
-    pipeline = get_pipeline()
+    pipe, config = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -142,7 +142,7 @@ def test_images_videos():
 import cv2
 def test_ci_case():
     print(f"== test_ci_case")
-    pipeline = get_pipeline()
+    pipeline, config = get_pipeline()
     num_frames = 10
     video = cv2.VideoCapture("../test_video/spinning-earth-480.mp4")
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -191,6 +191,6 @@ if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     # test_image()
     # test_images_videos()
-    # test_video(as_video=True)
+    test_video(as_video=True)
     # test_video(as_video=False)
-    test_add_extension()
+    # test_add_extension()
