@@ -97,11 +97,12 @@ int test_vllm_lookup(int argc, char* argv[]) {
     ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
     auto images = utils::load_images("../test_video/rsz_0.png");
+    std::string prompts = "Is there animal in this image? please answer like: \"There is 2 ducks in this image.\"";
 
     for (size_t i = 0;i < 1; i++) {
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto outputs = pipe.generate("What is the capital of China?", ov::genai::image(images[0]), ov::genai::generation_config(config));
+        auto outputs = pipe.generate(prompts, ov::genai::image(images[0]), ov::genai::generation_config(config));
         auto t2 = std::chrono::high_resolution_clock::now();
         // pipe.finish_chat();
         std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms, " << outputs << '\n';
