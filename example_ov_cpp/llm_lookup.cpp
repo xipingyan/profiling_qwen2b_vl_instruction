@@ -92,7 +92,7 @@ int test_vllm_lookup(int argc, char* argv[]) {
     ov::AnyMap cfg;
     // cfg["ATTENTION_BACKEND"] = "SDPA";
     cfg["ATTENTION_BACKEND"] = "PA";
-    // cfg["prompt_lookup"] = enable_look_up;
+    cfg["prompt_lookup"] = enable_look_up;
 
     ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
