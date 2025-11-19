@@ -1,4 +1,7 @@
 
+$env:http_proxy = "http://proxy-dmz.intel.com:912"
+$env:https_proxy = "http://proxy-dmz.intel.com:912"
+
 # python -m venv python-env
 . .\python-env\Scripts\Activate.ps1
 # pip install -r .\openvino.genai\tests\python_tests\requirements.txt
