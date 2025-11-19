@@ -194,6 +194,8 @@ def test_image_custom_vit():
     IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
     os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
     os.environ["IMG_PATH"] = IMG_PATH
+    print(f"  == CUSTOM_VIT_PATH = {CUSTOM_VIT_PATH}")
+    print(f"  == IMG_PATH = {IMG_PATH}")
 
     pipe, config = get_pipeline()
 
@@ -218,8 +220,10 @@ def test_image_custom_vit():
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
+    print("GenAI Version:", ov_genai.get_version())
     # test_image()
     # test_images_videos()
-    test_video(as_video=True)
+    # test_video(as_video=True)
     # test_video(as_video=False)
     # test_add_extension()
+    # test_image_custom_vit()
