@@ -3,7 +3,7 @@ cd ${SCRIPT_DIR}
 
 # PYTHON API test: openvino/genai need to share same python ENV.
 source ../python-env/bin/activate
-source ../source_ov.shcd
+source ../source_ov.sh
 cd ${SCRIPT_DIR}
 
 GENAI_ROOT_DIR=../openvino.genai/install/python/

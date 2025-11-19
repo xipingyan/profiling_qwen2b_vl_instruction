@@ -15,3 +15,4 @@ ov::Tensor create_countdown_frames();
 }
 
 int test_llm_lookup(int argc, char* argv[]);
+int test_vllm_lookup(int argc, char* argv[]);

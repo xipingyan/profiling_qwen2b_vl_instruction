@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import openvino as ov
 import time
+import os
 
 def get_pipeline():
     ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
@@ -20,7 +21,7 @@ def get_pipeline():
     config = ov_genai.GenerationConfig()
     config.max_new_tokens = 50
     config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
-    return pipe
+    return pipe, config
 
 def load_image_preresize(image_url_or_file):
     if str(image_url_or_file).startswith("http") or str(image_url_or_file).startswith("https"):
@@ -53,7 +54,7 @@ def streamer(subword: str) -> bool:
     print(subword, end="", flush=True)
 
 def test_image():
-    pipeline = get_pipeline()
+    pipeline, config = get_pipeline()
     image = load_image_preresize('../test_video/rsz_0.png')
     ov_image = ov.Tensor(image)
     prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
@@ -77,7 +78,7 @@ def test_image():
 
 def test_video(as_video=True):
     print(f"== test video. as_video={as_video}")
-    pipeline = get_pipeline()
+    pipe, config = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -108,7 +109,7 @@ def test_video(as_video=True):
 
 def test_images_videos():
     print(f"== test_images_videos")
-    pipeline = get_pipeline()
+    pipe, config = get_pipeline()
 
     images = load_all_images()
     video = np.stack(images, axis=0)
@@ -139,11 +140,11 @@ def test_images_videos():
     pipe.finish_chat()
     print('output = ', output)
 
-import cv2
 def test_ci_case():
     print(f"== test_ci_case")
-    pipeline = get_pipeline()
+    pipeline, config = get_pipeline()
     num_frames = 10
+    import cv2
     video = cv2.VideoCapture("../test_video/spinning-earth-480.mp4")
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     interval = 25
@@ -162,13 +163,13 @@ def test_ci_case():
     prompt = "What is Earth's spin and which continents are visible over time in the video? Which of them are shown on the beginning and which of them are presented on the end of the clip?"
     print(f"Question:\n  {prompt}")
 
-    pipe.start_chat()
+    pipeline.start_chat()
     for id in range(1):
         t1 = time.time()
-        output = pipe.generate(prompt, videos=ov_video, generation_config=config, streamer=streamer,)
+        output = pipeline.generate(prompt, videos=ov_video, generation_config=config, streamer=streamer,)
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
-    pipe.finish_chat()
+    pipeline.finish_chat()
     print('output = ', output)
 
 def test_add_extension():
@@ -187,10 +188,43 @@ def test_add_extension():
 
     pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS": ["/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"]}})
 
+def test_image_custom_vit():
+    print(f"== test_images_videos")
+    # CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
+    CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
+    IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
+    os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
+    os.environ["IMG_PATH"] = IMG_PATH
+    print(f"  == CUSTOM_VIT_PATH = {CUSTOM_VIT_PATH}")
+    print(f"  == IMG_PATH = {IMG_PATH}")
+
+    pipe, config = get_pipeline()
+
+    image = load_image(IMG_PATH)
+    ov_imgs = [ov.Tensor(np.stack([image], axis=0))]
+
+    print(f"== ov_imgs shape = {ov_imgs[0].data.shape}")
+
+    pipe.start_chat()
+    t1 = time.time()
+    prompt = "Please describe the image."
+    output1 = pipe.generate(prompt, images=ov_imgs, generation_config=config, streamer=streamer,)
+    t2 = time.time()
+
+    prompt = "how many chairs in this image?"
+    output2 = pipe.generate(prompt, images=ov_imgs, generation_config=config, streamer=streamer,)
+    t3 = time.time()
+    print(f'== First generate time = {t2-t1:.3f} s, second generate = {t3-t2:.3f} s')
+    pipe.finish_chat()
+    print('output1 = ', output1)
+    print('output2 = ', output2)
+
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
+    print("GenAI Version:", ov_genai.get_version())
     # test_image()
     # test_images_videos()
     # test_video(as_video=True)
     # test_video(as_video=False)
-    test_add_extension()
+    # test_add_extension()
+    test_image_custom_vit()

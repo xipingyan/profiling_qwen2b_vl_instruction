@@ -322,14 +322,70 @@ int test_vlm_add_extension() {
     return 0;
 }
 
+int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
+{
+    std::cout << "== Start to: " << __FUNCTION__ << std::endl;
+
+	auto param = CTestParam();
+	param.pasre_params(argc, argv);
+
+	ov::AnyMap cfg;
+	if (param.device == "GPU")
+	{
+		cfg.insert({ ov::cache_dir("vlm_cache") });
+		std::cout << "    cfg vlm_cache = " << "vlm_cache" << std::endl;
+	}
+
+	cfg["ATTENTION_BACKEND"] = "SDPA";
+	// cfg["ATTENTION_BACKEND"] = "PA";
+	std::cout << "== Init VLMPipeline" << std::endl;
+	ov::genai::VLMPipeline pipe(param.model_path, param.device, cfg);
+	auto images = utils::load_images(param.img_video_path);
+
+    ov::genai::GenerationConfig generation_config;
+    generation_config.max_new_tokens = 100;
+
+	std::string prompt = param.prompt;
+	std::vector<std::string> prompt_vec;
+	prompt_vec.push_back(prompt);
+	prompt_vec.push_back("how many chairs in this image?");
+
+
+    // only first loop input images.
+    std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
+    images_vec[0] = images;
+
+    for (int l = 0; l < 1; l++)
+    {
+        std::cout << "Loop: [" << l << "] " << std::endl;
+		pipe.start_chat();
+		for (int i = 0; i < prompt_vec.size(); i++)
+		{
+			auto t1 = std::chrono::high_resolution_clock::now();
+			auto aa = pipe.generate(prompt_vec[i],
+				ov::genai::images(images_vec[i]),
+				ov::genai::generation_config(generation_config)
+			);
+			auto t2 = std::chrono::high_resolution_clock::now();
+			std::cout << "result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+
+		}
+		pipe.finish_chat();
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
         // return test_llm_lookup(argc, argv);
+        // return test_vllm_lookup(argc, argv);
         // return test_cb_add_request_vs_vlm();
         // return test_chat_with_video_image();
         // return test_vlm_add_extension();
+        return test_qwen2_5_vl_custom_vit(argc, argv);
+
         auto param = CTestParam();
         param.pasre_params(argc, argv);
 
