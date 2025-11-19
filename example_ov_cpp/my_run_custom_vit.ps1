@@ -1,3 +1,6 @@
+# Note: 
+# Powershell, no tip for lost dll.
+# We need to copy all dll manually.
 $env:SCRIPT_DIR_EXAMPLE_OV_CPP_RUN = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\example_ov_cpp"
 
 echo "workpath = $env:SCRIPT_DIR_EXAMPLE_OV_CPP_RUN"
@@ -20,4 +23,8 @@ $env:OPENCV_BIN = "C:\\Users\\xipingya\\Downloads\\opencv\\build\\bin"
 $env:PATH = "$env:GENAI_ROOT_DIR\\openvino.genai\\install\\runtime\\bin\\intel64\\Debug;$env:OPENCV_BIN;$env:PATH"
 
 echo "== Start: qwen2vl_app_cpp"
+
+$env:CustomVIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
+$env:CUSTOM_VIT_IMG_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg"
+
 .\\build\\Debug\\qwen2vl_app_cpp.exe $env:model_id $env:type $env:video_img_path $env:device $env:prompt
