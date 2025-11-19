@@ -190,8 +190,8 @@ def test_add_extension():
 
 def test_image_custom_vit():
     print(f"== test_images_videos")
-    # CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
-    CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
+    CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
+    # CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
     IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
     os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
     os.environ["IMG_PATH"] = IMG_PATH

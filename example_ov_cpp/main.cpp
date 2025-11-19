@@ -350,7 +350,6 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 	prompt_vec.push_back(prompt);
 	prompt_vec.push_back("how many chairs in this image?");
 
-
     // only first loop input images.
     std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
     images_vec[0] = images;
@@ -361,6 +360,7 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 		pipe.start_chat();
 		for (int i = 0; i < prompt_vec.size(); i++)
 		{
+            std::cout << "images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
 			auto t1 = std::chrono::high_resolution_clock::now();
 			auto aa = pipe.generate(prompt_vec[i],
 				ov::genai::images(images_vec[i]),
