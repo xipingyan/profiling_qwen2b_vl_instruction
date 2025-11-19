@@ -13,7 +13,6 @@ cd $env:SCRIPT_DIR_EXAMPLE_OV_CPP_RUN
 $env:model_id = "../models/ov/Qwen2.5-VL-3B-Instruct/INT4/"
 
 $env:type="img"
-$env:video_img_path = "../test_video/home.jpg"
 $env:prompt = "prompt.txt"
 echo "Please describe the image." > $prompt
 
@@ -27,4 +26,4 @@ echo "== Start: qwen2vl_app_cpp"
 $env:CustomVIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
 $env:CUSTOM_VIT_IMG_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg"
 
-.\\build\\Debug\\qwen2vl_app_cpp.exe $env:model_id $env:type $env:video_img_path $env:device $env:prompt
+.\\build\\Debug\\qwen2vl_app_cpp.exe $env:model_id $env:type $env:CUSTOM_VIT_IMG_PATH $env:device $env:prompt
