@@ -8,8 +8,8 @@ $env:https_proxy = "http://proxy-dmz.intel.com:912"
 
 # Windows nightly don't contain python package, so build ov from source.
 # . ..\openvino\build\install\setupvars.ps1
-# . openvino_toolkit_windows_2025.4.0.dev20251017_x86_64\setupvars.ps1
-. openvino_toolkit_windows_2026.0.0.dev20251117_x86_64\setupvars.ps1
+. openvino_toolkit_windows_2025.4.0.dev20251105_x86_64\setupvars.ps1
+# . openvino_toolkit_windows_2026.0.0.dev20251117_x86_64\setupvars.ps1
 
 
 cd openvino.genai

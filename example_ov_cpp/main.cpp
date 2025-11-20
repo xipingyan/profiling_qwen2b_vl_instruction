@@ -322,12 +322,56 @@ int test_vlm_add_extension() {
     return 0;
 }
 
+#ifdef _WIN32
+void set_env_windows(const std::string& env_string) {
+    // The string must be in the format "NAME=VALUE"
+    if (_putenv(env_string.c_str()) == 0) {
+        std::cout << "Successfully set environment variable: " << env_string << std::endl;
+    }
+    else {
+        std::cerr << "Error setting environment variable." << std::endl;
+    }
+}
+inline void set_env(const char* name, const char* value) {
+    set_env_windows(std::string(name) + "=" + std::string(value));
+}
+#else
+
+#include <cstdlib>
+#include <iostream>
+inline void set_env_posix(const char* name, const char* value) {
+    // setenv(name, value, overwrite)
+    // overwrite = 1: change the value if the variable already exists
+    // overwrite = 0: do not change the value if the variable already exists
+    if (setenv(name, value, 1) == 0) {
+        std::cout << "Successfully set environment variable: " << name << "=" << value << std::endl;
+    } else {
+        std::cerr << "Error setting environment variable." << std::endl;
+    }
+}
+inline void set_env(const char* name, const char* value) {
+    set_env_posix(name, value);
+}
+#endif
+
 int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 {
     std::cout << "== Start to: " << __FUNCTION__ << std::endl;
 
 	auto param = CTestParam();
-	param.pasre_params(argc, argv);
+    if (argc > 1) {
+        param.pasre_params(argc, argv);
+    }
+    else {
+        std::cout << " == Use default param" << std::endl;
+        param.device = "GPU";
+        param.model_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\models\\ov\\Qwen2.5-VL-3B-Instruct\\INT4";
+        param.img_video_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg";
+        param.prompt = "Please describe the image.";
+        set_env("CUSTOM_VIT_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit");
+        set_env("CUSTOM_VIT_IMG_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg");
+        set_env("ENABLE_CUSTOM_VIT", "1");
+    }
 
 	ov::AnyMap cfg;
 	if (param.device == "GPU")
@@ -350,7 +394,6 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 	prompt_vec.push_back(prompt);
 	prompt_vec.push_back("how many chairs in this image?");
 
-
     // only first loop input images.
     std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
     images_vec[0] = images;
@@ -361,6 +404,9 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 		pipe.start_chat();
 		for (int i = 0; i < prompt_vec.size(); i++)
 		{
+            if (images_vec[i].size() > 0) {
+                std::cout << "images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
+            }
 			auto t1 = std::chrono::high_resolution_clock::now();
 			auto aa = pipe.generate(prompt_vec[i],
 				ov::genai::images(images_vec[i]),
