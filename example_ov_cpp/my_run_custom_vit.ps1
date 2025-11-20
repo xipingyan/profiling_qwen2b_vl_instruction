@@ -17,6 +17,9 @@ $env:type="img"
 $env:prompt = "prompt.txt"
 echo "Please describe the image." > $prompt
 
+$env:prompt2 = "prompt2.txt"
+echo "How many chars in this image?" > $prompt2
+
 $env:device='GPU'
 $env:GENAI_ROOT_DIR = "$env:SCRIPT_DIR_EXAMPLE_OV_CPP_RUN\\.."
 $env:OPENCV_BIN = "C:\\Users\\xipingya\\Downloads\\opencv\\build\\bin"
@@ -28,4 +31,4 @@ $env:CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit
 $env:CUSTOM_VIT_IMG_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg"
 $env:ENABLE_CUSTOM_VIT = "1"
 
-.\\build\\Debug\\qwen2vl_app_cpp.exe $env:model_id $env:type $env:CUSTOM_VIT_IMG_PATH $env:device $env:prompt
+.\\build\\Debug\\qwen2vl_app_cpp.exe $env:model_id $env:type $env:CUSTOM_VIT_IMG_PATH $env:device $env:prompt $env:prompt2

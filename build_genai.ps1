@@ -13,13 +13,13 @@ $env:https_proxy = "http://proxy-dmz.intel.com:912"
 
 
 cd openvino.genai
-# cmake -DCMAKE_BUILD_TYPE=Release -DOpenVINO_DIR=C:\Users\openvino-ci-88\xiping\openvino\build -DENABLE_PYTHON_PACKAGING=ON -S ./ -B ./build/
-# cmake --build ./build/ --config Release -j 96
-# cmake --install ./build/ --config Release --prefix ./install
+cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -S ./ -B ./build/
+cmake --build ./build/ --config Release -j 30
+cmake --install ./build/ --config Release --prefix ./install
 
 # Debug
-cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
-cmake --build ./build/ --config Debug -j 30
-cmake --install ./build/ --config Debug --prefix ./install
+# cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
+# cmake --build ./build/ --config Debug -j 30
+# cmake --install ./build/ --config Debug --prefix ./install
 
 cd ..
