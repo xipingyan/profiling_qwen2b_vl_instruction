@@ -389,10 +389,9 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
     ov::genai::GenerationConfig generation_config;
     generation_config.max_new_tokens = 100;
 
-	std::string prompt = param.prompt;
 	std::vector<std::string> prompt_vec;
-	prompt_vec.push_back(prompt);
-	prompt_vec.push_back("how many chairs in this image?");
+	prompt_vec.push_back(param.prompt);
+	prompt_vec.push_back(param.prompt2);
 
     // only first loop input images.
     std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
