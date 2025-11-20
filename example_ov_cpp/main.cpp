@@ -368,6 +368,7 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
         param.model_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\models\\ov\\Qwen2.5-VL-3B-Instruct\\INT4";
         param.img_video_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg";
         param.prompt = "Please describe the image.";
+        param.prompt2 = "How many chairs in this image?";
         set_env("CUSTOM_VIT_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit");
         set_env("CUSTOM_VIT_IMG_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg");
         set_env("ENABLE_CUSTOM_VIT", "1");
@@ -397,14 +398,14 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
     std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
     images_vec[0] = images;
 
-    for (int l = 0; l < 1; l++)
+    for (int l = 0; l < 2; l++)
     {
         std::cout << "Loop: [" << l << "] " << std::endl;
 		pipe.start_chat();
 		for (int i = 0; i < prompt_vec.size(); i++)
 		{
             if (images_vec[i].size() > 0) {
-                std::cout << "images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
+                std::cout << "  images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
             }
 			auto t1 = std::chrono::high_resolution_clock::now();
 			auto aa = pipe.generate(prompt_vec[i],
@@ -412,8 +413,8 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
 				ov::genai::generation_config(generation_config)
 			);
 			auto t2 = std::chrono::high_resolution_clock::now();
-			std::cout << "result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
-
+			std::cout << "  == result: " << aa.texts[0].c_str() << std::endl;
+            std::cout << "  == score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
 		}
 		pipe.finish_chat();
     }
