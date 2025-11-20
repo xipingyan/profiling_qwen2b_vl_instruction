@@ -166,7 +166,8 @@ void test_video(const CTestParam &param, ov::genai::VLMPipeline &pipe, const std
         auto aa = pipe.generate("What is special about this image?",
                                 ov::genai::images(images),
                                 ov::genai::videos(videos),
-                                ov::genai::generation_config(generation_config));
+                                ov::genai::generation_config(generation_config),
+                                ov::genai::streamer(print_subword));
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "      result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
         // pipe.finish_chat();
@@ -408,13 +409,16 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
                 std::cout << "  images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
             }
 			auto t1 = std::chrono::high_resolution_clock::now();
-			auto aa = pipe.generate(prompt_vec[i],
-				ov::genai::images(images_vec[i]),
-				ov::genai::generation_config(generation_config)
-			);
+            auto aa = pipe.generate(prompt_vec[i],
+                ov::genai::images(images_vec[i]),
+                ov::genai::generation_config(generation_config));
+                //ov::genai::streamer(print_subword));
 			auto t2 = std::chrono::high_resolution_clock::now();
 			std::cout << "  == result: " << aa.texts[0].c_str() << std::endl;
             std::cout << "  == score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+            std::cout << "    == get_prepare_embeddings_duration = " << aa.perf_metrics.get_prepare_embeddings_duration().mean << std::endl;
+            std::cout << "    == TTFT = " << aa.perf_metrics.get_ttft().mean << " +- " << aa.perf_metrics.get_ttft().std << std::endl;
+            std::cout << "    == TPOT = " << aa.perf_metrics.get_tpot().mean << " +- " << aa.perf_metrics.get_tpot().std << std::endl;
 		}
 		pipe.finish_chat();
     }

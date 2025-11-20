@@ -15,8 +15,8 @@ cd build
 # Based on myown build openvino.genai
 $env:CMAKE_PREFIX_PATH = "../../openvino.genai/install/runtime/cmake/;C:\Users\xipingya\Downloads\opencv\build"
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-# cmake -DCMAKE_BUILD_TYPE=Release ..
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 # make -j32
 
 cd ..
