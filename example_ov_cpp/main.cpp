@@ -166,7 +166,8 @@ void test_video(const CTestParam &param, ov::genai::VLMPipeline &pipe, const std
         auto aa = pipe.generate("What is special about this image?",
                                 ov::genai::images(images),
                                 ov::genai::videos(videos),
-                                ov::genai::generation_config(generation_config));
+                                ov::genai::generation_config(generation_config),
+                                ov::genai::streamer(print_subword));
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "      result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
         // pipe.finish_chat();
@@ -368,6 +369,7 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
         param.model_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\models\\ov\\Qwen2.5-VL-3B-Instruct\\INT4";
         param.img_video_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg";
         param.prompt = "Please describe the image.";
+        param.prompt2 = "How many chairs in this image?";
         set_env("CUSTOM_VIT_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit");
         set_env("CUSTOM_VIT_IMG_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg");
         set_env("ENABLE_CUSTOM_VIT", "1");
@@ -389,32 +391,34 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
     ov::genai::GenerationConfig generation_config;
     generation_config.max_new_tokens = 100;
 
-	std::string prompt = param.prompt;
 	std::vector<std::string> prompt_vec;
-	prompt_vec.push_back(prompt);
-	prompt_vec.push_back("how many chairs in this image?");
+	prompt_vec.push_back(param.prompt);
+	prompt_vec.push_back(param.prompt2);
 
     // only first loop input images.
     std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
     images_vec[0] = images;
 
-    for (int l = 0; l < 1; l++)
+    for (int l = 0; l < 2; l++)
     {
         std::cout << "Loop: [" << l << "] " << std::endl;
 		pipe.start_chat();
 		for (int i = 0; i < prompt_vec.size(); i++)
 		{
             if (images_vec[i].size() > 0) {
-                std::cout << "images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
+                std::cout << "  images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
             }
 			auto t1 = std::chrono::high_resolution_clock::now();
-			auto aa = pipe.generate(prompt_vec[i],
-				ov::genai::images(images_vec[i]),
-				ov::genai::generation_config(generation_config)
-			);
+            auto aa = pipe.generate(prompt_vec[i],
+                ov::genai::images(images_vec[i]),
+                ov::genai::generation_config(generation_config));
+                //ov::genai::streamer(print_subword));
 			auto t2 = std::chrono::high_resolution_clock::now();
-			std::cout << "result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
-
+			std::cout << "  == result: " << aa.texts[0].c_str() << std::endl;
+            std::cout << "  == score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+            std::cout << "    == get_prepare_embeddings_duration = " << aa.perf_metrics.get_prepare_embeddings_duration().mean << std::endl;
+            std::cout << "    == TTFT = " << aa.perf_metrics.get_ttft().mean << " +- " << aa.perf_metrics.get_ttft().std << std::endl;
+            std::cout << "    == TPOT = " << aa.perf_metrics.get_tpot().mean << " +- " << aa.perf_metrics.get_tpot().std << std::endl;
 		}
 		pipe.finish_chat();
     }
