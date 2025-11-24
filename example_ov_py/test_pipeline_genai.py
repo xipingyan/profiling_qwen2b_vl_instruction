@@ -188,14 +188,20 @@ def test_add_extension():
 
     pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS": ["/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"]}})
 
+import sys
 def test_image_custom_vit():
     print(f"== test_images_videos")
-    CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
-    # CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
-    IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
-    os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
-    os.environ["IMG_PATH"] = IMG_PATH
-    print(f"  == CUSTOM_VIT_PATH = {CUSTOM_VIT_PATH}")
+    platform = sys.platform
+    if platform.startswith('linux'):
+        IMG_PATH = "../test_video/home.jpg"
+    elif platform == 'win32':
+        CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
+        # CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
+        IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
+        os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
+        os.environ["IMG_PATH"] = IMG_PATH
+        print(f"  == CUSTOM_VIT_PATH = {CUSTOM_VIT_PATH}")
+
     print(f"  == IMG_PATH = {IMG_PATH}")
 
     pipe, config = get_pipeline()
@@ -205,19 +211,28 @@ def test_image_custom_vit():
 
     print(f"== ov_imgs shape = {ov_imgs[0].data.shape}")
 
-    pipe.start_chat()
-    t1 = time.time()
-    prompt = "Please describe the image."
-    output1 = pipe.generate(prompt, images=ov_imgs, generation_config=config, streamer=streamer,)
-    t2 = time.time()
+    for i in range(2):
+        print(f"===== LOOP [{i}] =====")
+        pipe.start_chat()
+        t1 = time.time()
+        prompt = "Please describe the image."
+        output1 = pipe.generate(prompt, images=ov_imgs, generation_config=config)
+        t2 = time.time()
 
-    prompt = "how many chairs in this image?"
-    output2 = pipe.generate(prompt, images=ov_imgs, generation_config=config, streamer=streamer,)
-    t3 = time.time()
-    print(f'== First generate time = {t2-t1:.3f} s, second generate = {t3-t2:.3f} s')
-    pipe.finish_chat()
-    print('output1 = ', output1)
-    print('output2 = ', output2)
+        prompt = "how many chairs in this image?"
+        output2 = pipe.generate(prompt, generation_config=config)
+        t3 = time.time()
+        print(f'== First generate time = {t2-t1:.3f} s, second generate = {t3-t2:.3f} s')
+        pipe.finish_chat()
+        print('output1 = ', output1)
+        print('output2 = ', output2)
+        print(f"    == get_prepare_embeddings_duration = {output1.perf_metrics.get_prepare_embeddings_duration().mean}")
+        print(f"    == TTFT = {output1.perf_metrics.get_ttft().mean}")
+        print(f"    == TPOT = {output1.perf_metrics.get_tpot().mean}")
+
+        print(f"    == get_prepare_embeddings_duration = {output2.perf_metrics.get_prepare_embeddings_duration().mean}")
+        print(f"    == TTFT = {output2.perf_metrics.get_ttft().mean}")
+        print(f"    == TPOT = {output2.perf_metrics.get_tpot().mean}")
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
