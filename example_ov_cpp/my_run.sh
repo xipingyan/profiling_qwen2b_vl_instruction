@@ -30,5 +30,3 @@ device='GPU'
 # OV_VERBOSE=6
 # ONEDNN_VERBOSE=2 OV_GPU_DUMP_GRAPHS_PATH="./dump_graphs/" 
 ./build/qwen2vl_app_cpp $model_id $type $video_img_path $device
-
-# unitrace -g VectorEngine138 -q --chrome-kernel-logging -o xx.log ./build/qwen2vl_app_cpp $model_id $type $video_img_path

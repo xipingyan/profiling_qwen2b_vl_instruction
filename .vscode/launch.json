@@ -43,9 +43,13 @@
             "stopAtEntry": false,
             "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_cpp",
             "environment": [
+                // {
+                //     "name": "ENABLE_CUSTOM_VIT",
+                //     "value": "1"
+                // },
                 {
-                    "name": "ENABLE_CUSTOM_VIT",
-                    "value": "1"
+                    "name": "LOOKUP",
+                    "value": "0"
                 }
             ],
             "externalConsole": false,
