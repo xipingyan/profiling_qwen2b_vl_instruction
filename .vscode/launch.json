@@ -50,6 +50,10 @@
                 {
                     "name": "LOOKUP",
                     "value": "0"
+                },
+                {
+                    "name": "PA",
+                    "value": "0"
                 }
             ],
             "externalConsole": false,

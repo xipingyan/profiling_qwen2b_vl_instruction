@@ -33,4 +33,6 @@ export OV_CACHE=./ov_cache
 #  gdb --args python -m pytest ./ -s -m precommit -k test_vlm_pipeline_chat_with_video
 
 # python -m pytest ./ -m precommit -k test_add_extension
-python -m pytest ./test_vlm_pipeline.py -m precommit -k test_vlm_pipeline_add_extension
+# python -m pytest ./test_vlm_pipeline.py -m precommit -k test_vlm_pipeline_add_extension
+
+python -m pytest ./samples/test_prompt_lookup_decoding_vlm.py -k test_prompt_lookup_decoding_vlm
