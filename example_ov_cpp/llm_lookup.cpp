@@ -8,7 +8,8 @@
 
 int test_llm_lookup(int argc, char* argv[]) {
     ov::AnyMap enable_compile_cache;
-    std::string model_path = "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/OpenVINO/Qwen2-0.5B-int8-ov/";
+    std::string model_path = "../models/OpenVINO/Qwen2-0.5B-int8-ov/";
+    
     std::string device = "GPU.0";
     if (device == "GPU") {
         // Cache compiled models on disk for GPU to save time on the
@@ -21,9 +22,19 @@ int test_llm_lookup(int argc, char* argv[]) {
     if (std::getenv("LOOKUP") && std::string(std::getenv("LOOKUP")) == std::string("1")) {
         enable_look_up = true;
     }
-    std::cout << "== enable_look_up = " << enable_look_up << std::endl;
 
-    ov::genai::LLMPipeline pipe(model_path, device, ov::genai::prompt_lookup(enable_look_up));
+    ov::AnyMap cfg;
+    if (std::getenv("PA") && std::string(std::getenv("PA")) == std::string("1")) {
+        cfg["ATTENTION_BACKEND"] = "PA";
+    } else {
+        cfg["ATTENTION_BACKEND"] = "SDPA";
+    }
+    cfg["prompt_lookup"] = enable_look_up;
+    std::cout << "  == cfg[\"ATTENTION_BACKEND\"] = " << cfg["ATTENTION_BACKEND"].as<std::string>() << std::endl;
+    std::cout << "  == cfg[\"prompt_lookup\"] = " << cfg["prompt_lookup"].as<bool>() << std::endl;
+    std::cout << "  == enable_look_up = " << enable_look_up << std::endl;
+
+    ov::genai::LLMPipeline pipe(model_path, device, cfg);
 
     ov::genai::GenerationConfig config;
     config.max_new_tokens = 20;
