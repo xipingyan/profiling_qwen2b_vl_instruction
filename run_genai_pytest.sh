@@ -24,7 +24,6 @@ export PYTHONPATH=${GENAI_ROOT_DIR}:$PYTHONPATH
 export LD_LIBRARY_PATH=${GENAI_ROOT_DIR}../runtime/lib/intel64/:$LD_LIBRARY_PATH
 
 export HF_ENDPOINT=https://hf-mirror.com
-# export HF_ENDPOINT=https://huggingface.co/
 
 cd openvino.genai/tests/python_tests
 export OV_CACHE=./ov_cache
@@ -35,4 +34,6 @@ export OV_CACHE=./ov_cache
 # python -m pytest ./ -m precommit -k test_add_extension
 # python -m pytest ./test_vlm_pipeline.py -m precommit -k test_vlm_pipeline_add_extension
 
-python -m pytest ./samples/test_prompt_lookup_decoding_vlm.py -k test_prompt_lookup_decoding_vlm
+python -m pytest ./samples/test_prompt_lookup_decoding_vlm.py -s -k test_prompt_lookup_decoding_vlm
+# python -m pytest ./samples/test_prompt_lookup_decoding_lm.py -s -k test_prompt_lookup_decoding_lm
+

@@ -22,3 +22,4 @@ cd openvino.genai/samples/python/visual_language_chat/
 export OV_CACHE=./ov_cache
 
 python prompt_lookup_decoding_vlm.py $MODEL_ID $IMG_FN "$PROMPT"
+python prompt_lookup_decoding_vlm.py $MODEL_ID $IMG_FN "$PROMPT" --disable_lookup
