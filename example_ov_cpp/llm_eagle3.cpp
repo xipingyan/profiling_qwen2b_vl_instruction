@@ -13,40 +13,29 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     std::string draft_path = "../models/eagle3/qwen2.5-vl-7b-eagle3-ov-int4";
     std::string img_path="../test_video/IMG_20250723_145708_008_IN.jpg";
 
-    std::string device = "GPU.0";
+    std::string device = "GPU";
     if (device == "GPU") {
         enable_compile_cache.insert({ov::cache_dir("vlm_cache")});
         std::cout << "    enable_compile_cache = " << "vlm_cache" << std::endl;
     }
-
-    std::cout << "== Set ENV: LOOKUP=1 to enable LOOKUP ..." << std::endl;
-    bool enable_look_up = false;
-    if (std::getenv("LOOKUP") && std::string(std::getenv("LOOKUP")) == std::string("1")) {
-        enable_look_up = true;
-    }
-    std::cout << "  == enable_look_up = " << enable_look_up << std::endl;
+    std::cout << "  == device = " << device << std::endl;
 
     ov::genai::GenerationConfig config;
-    config.max_new_tokens = 20;
+    config.max_new_tokens = 60;
     config.do_sample=false;
     config.temperature=0.1;
-    if (enable_look_up)
-    {
-        // add parameter to enable prompt lookup decoding to generate `num_assistant_tokens` candidates per iteration
-        config.num_assistant_tokens = 5;
-        // Define max_ngram_size
-        config.max_ngram_size = 3;
-    }
+
+    auto draft_model = ov::genai::draft_model(draft_path, device);
 
     ov::AnyMap cfg;
     // cfg["ATTENTION_BACKEND"] = "SDPA";
     cfg["ATTENTION_BACKEND"] = "PA";
-    cfg["prompt_lookup"] = enable_look_up;
+    cfg[draft_model.first] = draft_model.second;
 
-    ov::genai::VLMPipeline pipe(model_path, device, cfg);
+    auto pipe = ov::genai::VLMPipeline(model_path, device, cfg);
 
-    auto images = utils::load_images("../test_video/rsz_0.png");
-    std::string prompts = "Is there animal in this image? please answer like: \"There is 2 ducks in this image.\"";
+    auto images = utils::load_images(img_path);
+    std::string prompts = "Please describe this image.";
 
     for (size_t i = 0;i < 1; i++) {
         // pipe.start_chat();
