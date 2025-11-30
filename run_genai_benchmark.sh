@@ -18,6 +18,5 @@ model_path=./models/eagle3/qwen2.5-vl-7b-ov-int4
 draft_model=./models/eagle3/qwen2.5-vl-7b-eagle3-ov-int4
 img_path=./test_video/IMG_20250723_145708_008_IN.jpg
 
-gdb --args python $app -n 3 -d GPU -mt 100 -m $model_path -dm $draft_model -p "Describ the picture"  -i $img_path
-# openvino runtime version: 2026.0.0-20426-d9d91e4eb22, genai version: 2026.0.0.0-2716-0d67b9ef376-bell/eagle_cb_top1_impl
-
+# gdb --args 
+python $app -n 3 -d GPU -mt 100 -m $model_path -dm $draft_model -p "简单描述一下这张图"  -i $img_path
