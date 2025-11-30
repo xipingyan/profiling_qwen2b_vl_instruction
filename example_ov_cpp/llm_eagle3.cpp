@@ -21,7 +21,7 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     std::cout << "  == device = " << device << std::endl;
 
     ov::genai::GenerationConfig config;
-    config.max_new_tokens = 60;
+    config.max_new_tokens = 256;
     config.do_sample=false;
     config.temperature=0.1;
 
@@ -32,12 +32,12 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     cfg["ATTENTION_BACKEND"] = "PA";
     if (std::getenv("EAGLE3") && std::getenv("EAGLE3") == std::string("0"))
     {
-        std::cout << " Disable eagle3" << std::endl;
+        std::cout << " **** Disable eagle3" << std::endl;
     }
     else
     {
         cfg[draft_model.first] = draft_model.second;
-        std::cout << " Enable eagle3" << std::endl;
+        std::cout << " **** Enable eagle3" << std::endl;
     }
 
     auto pipe = ov::genai::VLMPipeline(model_path, device, cfg);
@@ -46,7 +46,7 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     std::string prompts = "Please describe this image.";
     prompts = "描述这张图像";
 
-    for (size_t i = 0;i < 2; i++) {
+    for (size_t i = 0;i < 4; i++) {
         std::cout << "== Loop: " << i << std::endl;
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
