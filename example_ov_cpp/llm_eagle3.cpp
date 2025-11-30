@@ -30,20 +30,33 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     ov::AnyMap cfg;
     // cfg["ATTENTION_BACKEND"] = "SDPA";
     cfg["ATTENTION_BACKEND"] = "PA";
-    cfg[draft_model.first] = draft_model.second;
+    if (std::getenv("EAGLE3") && std::getenv("EAGLE3") == std::string("0"))
+    {
+        std::cout << " Disable eagle3" << std::endl;
+    }
+    else
+    {
+        cfg[draft_model.first] = draft_model.second;
+        std::cout << " Enable eagle3" << std::endl;
+    }
 
     auto pipe = ov::genai::VLMPipeline(model_path, device, cfg);
 
     auto images = utils::load_images(img_path);
     std::string prompts = "Please describe this image.";
+    prompts = "描述这张图像";
 
-    for (size_t i = 0;i < 1; i++) {
+    for (size_t i = 0;i < 2; i++) {
+        std::cout << "== Loop: " << i << std::endl;
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
         auto outputs = pipe.generate(prompts, ov::genai::image(images[0]), ov::genai::generation_config(config));
         auto t2 = std::chrono::high_resolution_clock::now();
         // pipe.finish_chat();
-        std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms, " << outputs << '\n';
+        std::cout << " time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms\n";
+        std::cout << " outputs: " << outputs << '\n';
+        std::cout << " TTFT: " << outputs.perf_metrics.get_ttft().mean << '\n';
+        std::cout << " TPOT: " << outputs.perf_metrics.get_tpot().mean << '\n';
     }
     return 0;
 }
