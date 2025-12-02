@@ -72,7 +72,7 @@ int test_vllm_eagle3(int argc, char* argv[]) {
     std::string prompts = "Please describe this image.";
     prompts = "简单描述一下这张图";
 
-    for (size_t i = 0;i < 8; i++) {
+    for (size_t i = 0;i < 3; i++) {
         std::cout << "== Loop: " << i << std::endl;
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -81,8 +81,8 @@ int test_vllm_eagle3(int argc, char* argv[]) {
         // pipe.finish_chat();
         std::cout << " time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms\n";
         std::cout << " outputs: " << outputs << '\n';
-        std::cout << " TTFT: " << outputs.perf_metrics.get_ttft().mean << '\n';
-        std::cout << " TPOT: " << outputs.perf_metrics.get_tpot().mean << '\n';
+        std::cout << " TTFT: " << outputs.perf_metrics.get_ttft().mean << " ± " << outputs.perf_metrics.get_ttft().mean << std::endl;
+        std::cout << " TPOT: " << outputs.perf_metrics.get_tpot().mean << " ± " << outputs.perf_metrics.get_tpot().mean << std::endl;
 
         auto sd_perf_metrics = std::dynamic_pointer_cast<ov::genai::SDPerModelsPerfMetrics>(outputs.extended_perf_metrics);
         print_perf_metrics(outputs.perf_metrics, "Total");

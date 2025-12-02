@@ -58,8 +58,8 @@ def test_eagle3():
         print(f"== loop: {i}")
         output = pipe.generate(prompts, image=ov_image, generation_config=config)
         print(f"     output: {output}")
-        print(f"     TTFT: {output.perf_metrics.get_ttft().mean:.2f} +- {output.perf_metrics.get_ttft().std:.2f} ms")
-        print(f"     TPOT: {output.perf_metrics.get_tpot().mean:.2f} +- {output.perf_metrics.get_tpot().std:.2f} ms")
+        print(f"     TTFT: {output.perf_metrics.get_ttft().mean:.2f} ± {output.perf_metrics.get_ttft().std:.2f} ms")
+        print(f"     TPOT: {output.perf_metrics.get_tpot().mean:.2f} ± {output.perf_metrics.get_tpot().std:.2f} ms")
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
