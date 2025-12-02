@@ -89,8 +89,12 @@
                 //     "name": "IMAGE_PREPROCESS",
                 //     "value": "CPP"
                 // }
+                // {
+                //     "name": "LOOKUP",
+                //     "value": "1"
+                // },
                 {
-                    "name": "LOOKUP",
+                    "name": "EAGLE3",
                     "value": "1"
                 }
             ],
