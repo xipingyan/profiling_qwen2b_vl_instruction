@@ -8,7 +8,13 @@
 
 int test_llm_lookup(int argc, char* argv[]) {
     ov::AnyMap enable_compile_cache;
-    std::string model_path = "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/OpenVINO/Qwen2-0.5B-int8-ov/";
+    std::string model_path = "../models/OpenVINO/Qwen2-0.5B-int8-ov/";
+
+    std::cout << "== test_llm_lookup ..." << std::endl;
+    std::cout << "   == Macro: PA=1     cfg[\"ATTENTION_BACKEND\"] = PA" << std::endl;
+    std::cout << "   == Macro: SDPA=1   cfg[\"ATTENTION_BACKEND\"] = SDPA, Default SDPA." << std::endl;
+    std::cout << "   == Macro: LOOKUP=1 cfg[\"prompt_lookup\"] = 1, Default 0." << std::endl;
+    
     std::string device = "GPU.0";
     if (device == "GPU") {
         // Cache compiled models on disk for GPU to save time on the
@@ -21,9 +27,20 @@ int test_llm_lookup(int argc, char* argv[]) {
     if (std::getenv("LOOKUP") && std::string(std::getenv("LOOKUP")) == std::string("1")) {
         enable_look_up = true;
     }
-    std::cout << "== enable_look_up = " << enable_look_up << std::endl;
 
-    ov::genai::LLMPipeline pipe(model_path, device, ov::genai::prompt_lookup(enable_look_up));
+    ov::AnyMap cfg;
+    if (std::getenv("PA") && std::string(std::getenv("PA")) == std::string("1")) {
+        cfg["ATTENTION_BACKEND"] = "PA";
+    } else {
+        cfg["ATTENTION_BACKEND"] = "SDPA";
+    }
+    if (enable_look_up) {
+        cfg["prompt_lookup"] = true;
+        std::cout << "  == cfg[\"prompt_lookup\"] = " << cfg["prompt_lookup"].as<bool>() << std::endl;
+    }
+    std::cout << "  == cfg[\"ATTENTION_BACKEND\"] = " << cfg["ATTENTION_BACKEND"].as<std::string>() << std::endl;
+
+    ov::genai::LLMPipeline pipe(model_path, device, cfg);
 
     ov::genai::GenerationConfig config;
     config.max_new_tokens = 20;
@@ -62,6 +79,10 @@ int test_llm_lookup(int argc, char* argv[]) {
 
 int test_vllm_lookup(int argc, char* argv[]) {
     std::cout << "== test_vllm_lookup ..." << std::endl;
+    std::cout << "   == Macro: PA=1     cfg[\"ATTENTION_BACKEND\"] = PA" << std::endl;
+    std::cout << "   == Macro: SDPA=1   cfg[\"ATTENTION_BACKEND\"] = SDPA, Default SDPA." << std::endl;
+    std::cout << "   == Macro: LOOKUP=1 cfg[\"prompt_lookup\"] = 1, Default 0." << std::endl;
+
     ov::AnyMap enable_compile_cache;
     std::string model_path = "../models/ov/Qwen2.5-VL-3B-Instruct/INT4/";
     std::string device = "GPU.0";
@@ -70,7 +91,6 @@ int test_vllm_lookup(int argc, char* argv[]) {
         std::cout << "    enable_compile_cache = " << "vlm_cache" << std::endl;
     }
 
-    std::cout << "== Set ENV: LOOKUP=1 to enable LOOKUP ..." << std::endl;
     bool enable_look_up = false;
     if (std::getenv("LOOKUP") && std::string(std::getenv("LOOKUP")) == std::string("1")) {
         enable_look_up = true;
@@ -90,13 +110,21 @@ int test_vllm_lookup(int argc, char* argv[]) {
     }
 
     ov::AnyMap cfg;
-    // cfg["ATTENTION_BACKEND"] = "SDPA";
-    cfg["ATTENTION_BACKEND"] = "PA";
-    cfg["prompt_lookup"] = enable_look_up;
+    if (std::getenv("PA") && std::string(std::getenv("PA")) == std::string("1")) {
+        cfg["ATTENTION_BACKEND"] = "PA";
+    } else {
+        cfg["ATTENTION_BACKEND"] = "SDPA";
+    }
+    if (enable_look_up) {
+        cfg["prompt_lookup"] = enable_look_up;
+        std::cout << "  == cfg[\"prompt_lookup\"] = " << cfg["prompt_lookup"].as<bool>() << std::endl;
+    }
+
+    std::cout << "  == cfg[\"ATTENTION_BACKEND\"] = " << cfg["ATTENTION_BACKEND"].as<std::string>() << std::endl;
 
     ov::genai::VLMPipeline pipe(model_path, device, cfg);
 
-    auto images = utils::load_images("../test_video/rsz_0.png");
+    auto images = utils::load_images("../test_video/cat_120_100.png");
     std::string prompts = "Is there animal in this image? please answer like: \"There is 2 ducks in this image.\"";
 
     for (size_t i = 0;i < 1; i++) {

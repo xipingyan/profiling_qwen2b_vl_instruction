@@ -26,5 +26,5 @@ cd openvino.genai
 
 # Debug
 # cmake -DCMAKE_BUILD_TYPE=Debug -S ./ -B ./build/
-cmake --build ./build/ --config Debug -j 20
+cmake --build ./build/ --config Debug -j 200
 cmake --install ./build/ --config Debug --prefix ./install

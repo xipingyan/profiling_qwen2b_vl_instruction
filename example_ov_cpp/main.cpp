@@ -166,7 +166,8 @@ void test_video(const CTestParam &param, ov::genai::VLMPipeline &pipe, const std
         auto aa = pipe.generate("What is special about this image?",
                                 ov::genai::images(images),
                                 ov::genai::videos(videos),
-                                ov::genai::generation_config(generation_config));
+                                ov::genai::generation_config(generation_config),
+                                ov::genai::streamer(print_subword));
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "      result: text =" << aa.texts[0].c_str() << ", score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
         // pipe.finish_chat();
@@ -322,6 +323,108 @@ int test_vlm_add_extension() {
     return 0;
 }
 
+#ifdef _WIN32
+void set_env_windows(const std::string& env_string) {
+    // The string must be in the format "NAME=VALUE"
+    if (_putenv(env_string.c_str()) == 0) {
+        std::cout << "Successfully set environment variable: " << env_string << std::endl;
+    }
+    else {
+        std::cerr << "Error setting environment variable." << std::endl;
+    }
+}
+inline void set_env(const char* name, const char* value) {
+    set_env_windows(std::string(name) + "=" + std::string(value));
+}
+#else
+
+#include <cstdlib>
+#include <iostream>
+inline void set_env_posix(const char* name, const char* value) {
+    // setenv(name, value, overwrite)
+    // overwrite = 1: change the value if the variable already exists
+    // overwrite = 0: do not change the value if the variable already exists
+    if (setenv(name, value, 1) == 0) {
+        std::cout << "Successfully set environment variable: " << name << "=" << value << std::endl;
+    } else {
+        std::cerr << "Error setting environment variable." << std::endl;
+    }
+}
+inline void set_env(const char* name, const char* value) {
+    set_env_posix(name, value);
+}
+#endif
+
+int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
+{
+    std::cout << "== Start to: " << __FUNCTION__ << std::endl;
+
+	auto param = CTestParam();
+    if (argc > 1) {
+        param.pasre_params(argc, argv);
+    }
+    else {
+        std::cout << " == Use default param" << std::endl;
+        param.device = "GPU";
+        param.model_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\models\\ov\\Qwen2.5-VL-3B-Instruct\\INT4";
+        param.img_video_path = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg";
+        param.prompt = "Please describe the image.";
+        param.prompt2 = "How many chairs in this image?";
+        set_env("CUSTOM_VIT_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit");
+        set_env("CUSTOM_VIT_IMG_PATH", "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit\\home.jpg");
+        set_env("ENABLE_CUSTOM_VIT", "1");
+    }
+
+	ov::AnyMap cfg;
+	if (param.device == "GPU")
+	{
+		cfg.insert({ ov::cache_dir("vlm_cache") });
+		std::cout << "    cfg vlm_cache = " << "vlm_cache" << std::endl;
+	}
+
+	cfg["ATTENTION_BACKEND"] = "SDPA";
+	// cfg["ATTENTION_BACKEND"] = "PA";
+	std::cout << "== Init VLMPipeline" << std::endl;
+	ov::genai::VLMPipeline pipe(param.model_path, param.device, cfg);
+	auto images = utils::load_images(param.img_video_path);
+
+    ov::genai::GenerationConfig generation_config;
+    generation_config.max_new_tokens = 100;
+
+	std::vector<std::string> prompt_vec;
+	prompt_vec.push_back(param.prompt);
+	prompt_vec.push_back(param.prompt2);
+
+    // only first loop input images.
+    std::vector<std::vector<ov::Tensor>> images_vec(prompt_vec.size());
+    images_vec[0] = images;
+
+    for (int l = 0; l < 2; l++)
+    {
+        std::cout << "Loop: [" << l << "] " << std::endl;
+		pipe.start_chat();
+		for (int i = 0; i < prompt_vec.size(); i++)
+		{
+            if (images_vec[i].size() > 0) {
+                std::cout << "  images_vec[i][0] = " << images_vec[i][0].get_shape() << std::endl;
+            }
+			auto t1 = std::chrono::high_resolution_clock::now();
+            auto aa = pipe.generate(prompt_vec[i],
+                ov::genai::images(images_vec[i]),
+                ov::genai::generation_config(generation_config));
+                //ov::genai::streamer(print_subword));
+			auto t2 = std::chrono::high_resolution_clock::now();
+			std::cout << "  == result: " << aa.texts[0].c_str() << std::endl;
+            std::cout << "  == score=" << aa.scores[0] << ", tm=" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms" << std::endl;
+            std::cout << "    == get_prepare_embeddings_duration = " << aa.perf_metrics.get_prepare_embeddings_duration().mean << std::endl;
+            std::cout << "    == TTFT = " << aa.perf_metrics.get_ttft().mean << " +- " << aa.perf_metrics.get_ttft().std << std::endl;
+            std::cout << "    == TPOT = " << aa.perf_metrics.get_tpot().mean << " +- " << aa.perf_metrics.get_tpot().std << std::endl;
+		}
+		pipe.finish_chat();
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     try
@@ -332,6 +435,7 @@ int main(int argc, char *argv[])
         // return test_chat_with_video_image();
         // return test_vlm_add_extension();
         return test_vllm_eagle3(argc, argv);
+        // return test_qwen2_5_vl_custom_vit(argc, argv);
 
         auto param = CTestParam();
         param.pasre_params(argc, argv);

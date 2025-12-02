@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import openvino as ov
 import time
+import os
 
 def get_pipeline():
     ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
@@ -139,11 +140,11 @@ def test_images_videos():
     pipe.finish_chat()
     print('output = ', output)
 
-import cv2
 def test_ci_case():
     print(f"== test_ci_case")
     pipeline, config = get_pipeline()
     num_frames = 10
+    import cv2
     video = cv2.VideoCapture("../test_video/spinning-earth-480.mp4")
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     interval = 25
@@ -162,13 +163,13 @@ def test_ci_case():
     prompt = "What is Earth's spin and which continents are visible over time in the video? Which of them are shown on the beginning and which of them are presented on the end of the clip?"
     print(f"Question:\n  {prompt}")
 
-    pipe.start_chat()
+    pipeline.start_chat()
     for id in range(1):
         t1 = time.time()
-        output = pipe.generate(prompt, videos=ov_video, generation_config=config, streamer=streamer,)
+        output = pipeline.generate(prompt, videos=ov_video, generation_config=config, streamer=streamer,)
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
-    pipe.finish_chat()
+    pipeline.finish_chat()
     print('output = ', output)
 
 def test_add_extension():
@@ -187,10 +188,58 @@ def test_add_extension():
 
     pipe = ov_genai.VLMPipeline(ov_model, "CPU", {{"EXTENSIONS": ["/mnt/xiping/gpu_profiling/ov_self_build_model_example/python/custom_op/1_register_kernel/cpu/build/libopenvino_custom_add_extension.so"]}})
 
+import sys
+def test_image_custom_vit():
+    print(f"== test_images_videos")
+    platform = sys.platform
+    if platform.startswith('linux'):
+        IMG_PATH = "../test_video/home.jpg"
+    elif platform == 'win32':
+        CUSTOM_VIT_PATH = "C:\\ov_task\\profiling_qwen2b_vl_instruction\\custom_vit"
+        # CUSTOM_VIT_PATH = "D:\\xiping\\custom_vit"
+        IMG_PATH = CUSTOM_VIT_PATH + "\\home.jpg"
+        os.environ["CUSTOM_VIT_PATH"] = CUSTOM_VIT_PATH
+        os.environ["IMG_PATH"] = IMG_PATH
+        print(f"  == CUSTOM_VIT_PATH = {CUSTOM_VIT_PATH}")
+
+    print(f"  == IMG_PATH = {IMG_PATH}")
+
+    pipe, config = get_pipeline()
+
+    image = load_image(IMG_PATH)
+    ov_imgs = [ov.Tensor(np.stack([image], axis=0))]
+
+    print(f"== ov_imgs shape = {ov_imgs[0].data.shape}")
+
+    for i in range(2):
+        print(f"===== LOOP [{i}] =====")
+        pipe.start_chat()
+        t1 = time.time()
+        prompt = "Please describe the image."
+        output1 = pipe.generate(prompt, images=ov_imgs, generation_config=config)
+        t2 = time.time()
+
+        prompt = "how many chairs in this image?"
+        output2 = pipe.generate(prompt, generation_config=config)
+        t3 = time.time()
+        print(f'== First generate time = {t2-t1:.3f} s, second generate = {t3-t2:.3f} s')
+        pipe.finish_chat()
+        print('output1 = ', output1)
+        print('output2 = ', output2)
+        print(f"    == get_prepare_embeddings_duration = {output1.perf_metrics.get_prepare_embeddings_duration().mean}")
+        print(f"    == TTFT = {output1.perf_metrics.get_ttft().mean}")
+        print(f"    == TPOT = {output1.perf_metrics.get_tpot().mean}")
+
+        print(f"    == get_prepare_embeddings_duration = {output2.perf_metrics.get_prepare_embeddings_duration().mean}")
+        print(f"    == TTFT = {output2.perf_metrics.get_ttft().mean}")
+        print(f"    == TPOT = {output2.perf_metrics.get_tpot().mean}")
+
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())
+    print("GenAI Version:", ov_genai.get_version())
     # test_image()
     # test_images_videos()
-    test_video(as_video=True)
+    # test_video(as_video=True)
     # test_video(as_video=False)
     # test_add_extension()
+    test_image_custom_vit()
