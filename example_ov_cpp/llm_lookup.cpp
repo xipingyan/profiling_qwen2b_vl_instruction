@@ -6,6 +6,13 @@
 #include <filesystem>
 #include <chrono>
 
+static bool print_subword(std::string &&subword)
+{
+    static int infer_id = 0;
+    return !(std::cout << "infer_id:[" << infer_id++ << "]=" << subword << std::endl
+                       << std::flush);
+}
+
 int test_llm_lookup(int argc, char* argv[]) {
     ov::AnyMap enable_compile_cache;
     std::string model_path = "../models/OpenVINO/Qwen2-0.5B-int8-ov/";
@@ -82,14 +89,21 @@ int test_vllm_lookup(int argc, char* argv[]) {
     std::cout << "   == Macro: PA=1     cfg[\"ATTENTION_BACKEND\"] = PA" << std::endl;
     std::cout << "   == Macro: SDPA=1   cfg[\"ATTENTION_BACKEND\"] = SDPA, Default SDPA." << std::endl;
     std::cout << "   == Macro: LOOKUP=1 cfg[\"prompt_lookup\"] = 1, Default 0." << std::endl;
+    std::cout << "   == Macro: DEV=GPU  Default GPU." << std::endl;
 
     ov::AnyMap enable_compile_cache;
     std::string model_path = "../models/ov/Qwen2.5-VL-3B-Instruct/INT4/";
     std::string device = "GPU.0";
-    if (device == "GPU") {
+    if (std::getenv("DEV"))
+    {
+        device = std::string(std::getenv("DEV"));
+    }
+    if (device == "GPU")
+    {
         enable_compile_cache.insert({ov::cache_dir("vlm_cache")});
         std::cout << "    enable_compile_cache = " << "vlm_cache" << std::endl;
     }
+    std::cout << "  == device = " << device << std::endl;
 
     bool enable_look_up = false;
     if (std::getenv("LOOKUP") && std::string(std::getenv("LOOKUP")) == std::string("1")) {
@@ -98,13 +112,13 @@ int test_vllm_lookup(int argc, char* argv[]) {
     std::cout << "  == enable_look_up = " << enable_look_up << std::endl;
 
     ov::genai::GenerationConfig config;
-    config.max_new_tokens = 20;
+    config.max_new_tokens = 64;
     config.do_sample=false;
     config.temperature=0.1;
     if (enable_look_up)
     {
         // add parameter to enable prompt lookup decoding to generate `num_assistant_tokens` candidates per iteration
-        config.num_assistant_tokens = 5;
+        config.num_assistant_tokens = 3;
         // Define max_ngram_size
         config.max_ngram_size = 3;
     }
@@ -126,14 +140,21 @@ int test_vllm_lookup(int argc, char* argv[]) {
 
     auto images = utils::load_images("../test_video/cat_120_100.png");
     std::string prompts = "Is there animal in this image? please answer like: \"There is 2 ducks in this image.\"";
+    // prompts = "请描述图片";
 
     for (size_t i = 0;i < 1; i++) {
         // pipe.start_chat();
         auto t1 = std::chrono::high_resolution_clock::now();
         auto outputs = pipe.generate(prompts, ov::genai::image(images[0]), ov::genai::generation_config(config));
+        //  ov::genai::streamer(print_subword));
         auto t2 = std::chrono::high_resolution_clock::now();
         // pipe.finish_chat();
-        std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms, " << outputs << '\n';
+        std::cout << " time:" << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " ms, " << std::endl;
+        std::cout << " outputs:" << outputs << std::endl;
+        std::cout << " TTFT: " << outputs.perf_metrics.get_ttft().mean << " ± " << outputs.perf_metrics.get_ttft().std << " ms" << std::endl;
+        std::cout << " TPOT: " << outputs.perf_metrics.get_tpot().mean << " ± " << outputs.perf_metrics.get_tpot().std << " ms" << std::endl;
+        std::cout << " generated num: " << outputs.perf_metrics.get_num_generated_tokens() << std::endl;
+        std::cout << " infer num: " << outputs.perf_metrics.raw_metrics.m_token_infer_durations.size() << std::endl;
     }
     return 0;
 }

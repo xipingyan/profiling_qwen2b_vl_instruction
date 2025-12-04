@@ -19,6 +19,8 @@ video_img_path="../test_video/home.jpg"
 device='GPU'
 # device='CPU'
 
+# export OPENVINO_LOG_LEVEL=3
+
 # gdb --args 
 # onetrace --chrome-call-logging --chrome-device-timeline 
 # heaptrack 
