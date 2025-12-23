@@ -58,9 +58,11 @@ def test_eagle3():
         print(f"== loop: {i}")
         output = pipe.generate(prompts, image=ov_image, generation_config=config)
         print(f"     output: {output}")
-        print(f"     TTFT: {output.perf_metrics.get_ttft().mean}")
-        print(f"     TPOT: {output.perf_metrics.get_tpot().mean}")
-        ext_perf = SDPerModelsPerfMetrics(output.extended_perf_metrics)
+        print(f"     TTFT: {output.perf_metrics.get_ttft().mean:.2f} ± {output.perf_metrics.get_ttft().std:.2f} ms")
+        print(f"     TPOT: {output.perf_metrics.get_tpot().mean:.2f} ± {output.perf_metrics.get_tpot().std:.2f} ms")
+        generated_tokens_num = output.perf_metrics.get_num_generated_tokens()
+        infer_num = len(output.perf_metrics.raw_metrics.m_new_token_times)
+        print(f"     generated_tokens: {generated_tokens_num}, infer num = {infer_num}, accept rate: {generated_tokens_num / infer_num}")
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())

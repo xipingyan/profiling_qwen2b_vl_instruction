@@ -63,6 +63,13 @@ class CTestParam {
                 prompt = argv[5];
             }
         }
+        if (7 <= argc)
+        {
+            if (!readFileToString(argv[6], prompt2))
+            {
+                prompt2 = argv[6];
+            }
+        }
 
         model_path = argv[1];
         print_param();
@@ -75,6 +82,7 @@ class CTestParam {
         std::cout << "    img_video_path = " << img_video_path << std::endl;
         std::cout << "    device = " << device << std::endl;
         std::cout << "    prompt = " << prompt << std::endl;
+        std::cout << "    prompt2 = " << prompt2 << std::endl;
     }
 
     std::string img_video_path = "../../cat_1.jpg";
@@ -82,4 +90,5 @@ class CTestParam {
     bool input_video = true;
     std::string device = "GPU";
     std::string prompt;
+    std::string prompt2;
 };
