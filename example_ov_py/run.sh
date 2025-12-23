@@ -11,8 +11,8 @@ export PYTHONPATH=${GENAI_ROOT_DIR}:$PYTHONPATH
 export LD_LIBRARY_PATH=${GENAI_ROOT_DIR}/../runtime/lib/intel64/:$LD_LIBRARY_PATH
 
 # gdb --args 
-# python ./test_pipeline_genai.py
-python ./test_pipeline_genai_eagle3.py
+python ./test_pipeline_genai.py
+# python ./test_pipeline_genai_eagle3.py
 
 # python ./test_pipeline_optimum.py
 # python test_llm_genai.py

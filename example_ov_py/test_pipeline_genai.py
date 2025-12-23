@@ -11,10 +11,10 @@ def get_pipeline():
 
     print("== ov_model=", ov_model)
     device = 'GPU'
-    # device = 'CPU'
+    device = 'CPU'
     print("== device =", device)
     ATTENTION_BACKEND='SDPA'
-    # ATTENTION_BACKEND='PA'
+    ATTENTION_BACKEND='PA'
     print("== ATTENTION_BACKEND =", ATTENTION_BACKEND)
     pipe = ov_genai.VLMPipeline(ov_model, device=device, ATTENTION_BACKEND=ATTENTION_BACKEND)
 
@@ -70,8 +70,32 @@ def test_image():
     for id in range(5):
         t1 = time.time()
         # print("sssss=", type(image_tensor))
-        # output = pipe.generate([prompt]*2, image=[image_tensor]*2, generation_config=config)
-        output = pipe.generate(prompt, image=ov_image, generation_config=config)
+        # output = pipeline.generate([prompt]*2, image=[ov_image]*2, generation_config=config)
+        output = pipeline.generate(prompt, image=ov_image, generation_config=config)
+        t2 = time.time()
+        print(f'== {id} time = {t2-t1:.3f} s')
+    print('output = ', output)
+
+def test_CB_pipeline():
+    ov_model='../models/ov/Qwen2.5-VL-3B-Instruct/INT4/'
+    print("== ov_model=", ov_model)
+    device = 'GPU'
+    device = 'CPU'
+    print("== device =", device)
+    scfg = ov_genai.SchedulerConfig()
+    pipe = ov_genai.ContinuousBatchingPipeline(ov_model, scfg, device=device)
+
+    config = ov_genai.GenerationConfig()
+    config.max_new_tokens = 50
+    config.set_eos_token_id(pipe.get_tokenizer().get_eos_token_id())
+
+    image = load_image_preresize('../test_video/rsz_0.png')
+    ov_image = ov.Tensor(image)
+    prompt = "请回答以下问题，务必只能回复一个词 \"Y\"或 \"N\"：图片和\"小狗。\"是否相关？"
+    for id in range(2):
+        t1 = time.time()
+        # print("sssss=", type(image_tensor))
+        output = pipe.generate(prompts=[prompt]*2)
         t2 = time.time()
         print(f'== {id} time = {t2-t1:.3f} s')
     print('output = ', output)
@@ -238,8 +262,9 @@ if __name__ == "__main__":
     print("OV Version:", ov.get_version())
     print("GenAI Version:", ov_genai.get_version())
     # test_image()
+    test_CB_pipeline()
     # test_images_videos()
     # test_video(as_video=True)
     # test_video(as_video=False)
     # test_add_extension()
-    test_image_custom_vit()
+    # test_image_custom_vit()

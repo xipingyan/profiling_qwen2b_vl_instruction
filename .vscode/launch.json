@@ -2,6 +2,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "a.out",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/ttt/a.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/ttt",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "Python C++ Debugger",
             "type": "pythoncpp",
             "request": "launch",
@@ -37,7 +61,7 @@
                 // "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video/rsz_video",
                 "img",
                 "../test_video/home.jpg",
-                "GPU",
+                "CPU",
                 "prompt.txt"
             ],
             "stopAtEntry": false,
@@ -58,6 +82,10 @@
                 {
                     "name": "PA",
                     "value": "1"
+                },
+                {
+                    "name": "DEV",
+                    "value": "CPU"
                 }
             ],
             "externalConsole": false,

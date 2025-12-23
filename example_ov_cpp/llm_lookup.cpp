@@ -140,7 +140,7 @@ int test_vllm_lookup(int argc, char* argv[]) {
 
     auto images = utils::load_images("../test_video/cat_120_100.png");
     std::string prompts = "Is there animal in this image? please answer like: \"There is 2 ducks in this image.\"";
-    // prompts = "请描述图片";
+    prompts = "请描述图片";
 
     for (size_t i = 0;i < 1; i++) {
         // pipe.start_chat();
