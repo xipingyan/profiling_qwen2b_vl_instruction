@@ -4,7 +4,7 @@ cd ${SCRIPT_MY_OV_DIR}
 
 source ./python-env/bin/activate
 
-USE_NIGHT_OV="0" # download from nightly build.
+USE_NIGHT_OV="1" # download from nightly build.
 
 if [ $USE_NIGHT_OV = "1" ]; then
     echo "-------------- USE_NIGHTLY_OV"

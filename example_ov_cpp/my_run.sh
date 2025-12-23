@@ -17,7 +17,7 @@ video_img_path="../test_video/home.jpg"
 # video_img_path=../test_video/rsz_video
 
 device='GPU'
-device='CPU'
+# device='CPU'
 
 # export OPENVINO_LOG_LEVEL=3
 
