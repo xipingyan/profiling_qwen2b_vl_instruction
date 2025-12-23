@@ -60,6 +60,7 @@ def test_eagle3():
         print(f"     output: {output}")
         print(f"     TTFT: {output.perf_metrics.get_ttft().mean}")
         print(f"     TPOT: {output.perf_metrics.get_tpot().mean}")
+        ext_perf = SDPerModelsPerfMetrics(output.extended_perf_metrics)
 
 if __name__ == "__main__":
     print("OV Version:", ov.get_version())

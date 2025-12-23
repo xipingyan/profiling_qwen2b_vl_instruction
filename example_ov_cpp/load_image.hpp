@@ -18,3 +18,4 @@ int test_llm_lookup(int argc, char* argv[]);
 int test_vllm_lookup(int argc, char* argv[]);
 
 int test_vllm_eagle3(int argc, char* argv[]);
+int test_llm_cdpruner(int argc, char* argv[]);
