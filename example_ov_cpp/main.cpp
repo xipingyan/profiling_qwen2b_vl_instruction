@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
     try
     {
         // return test_llm_lookup(argc, argv);
-        // return test_vllm_lookup(argc, argv);
+        return test_vllm_lookup(argc, argv);
         // return test_cb_add_request_vs_vlm();
         // return test_chat_with_video_image();
         // return test_vlm_add_extension();
