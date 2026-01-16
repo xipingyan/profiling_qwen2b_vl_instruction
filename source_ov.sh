@@ -10,7 +10,7 @@ if [ $USE_NIGHT_OV = "1" ]; then
     echo "-------------- USE_NIGHTLY_OV"
     # Get OS version, and source corresponding OpenVINO setupvars.sh
     UBUNTU_VER=$(lsb_release -rs | cut -d. -f1)
-    source ./openvino_toolkit_ubuntu${UBUNTU_VER}_2026.0.0.dev20251222_x86_64/setupvars.sh
+    source ./openvino_toolkit_ubuntu${UBUNTU_VER}_2026.0.0.dev20260115_x86_64/setupvars.sh
 else
     echo "-------------- Use my build OV"
     source ./openvino/build/install/setupvars.sh
