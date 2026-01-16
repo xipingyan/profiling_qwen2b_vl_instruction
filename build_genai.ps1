@@ -8,11 +8,9 @@ $env:https_proxy = "http://proxy-dmz.intel.com:912"
 
 # Windows nightly don't contain python package, so build ov from source.
 # . ..\openvino\build\install\setupvars.ps1
-. openvino_toolkit_windows_2025.4.0.dev20251105_x86_64\setupvars.ps1
-# . openvino_toolkit_windows_2026.0.0.dev20251117_x86_64\setupvars.ps1
+. openvino_toolkit_windows_2026.0.0.dev20260115_x86_64\setupvars.ps1
 
-
-cd openvino.genai
+Set-Location openvino.genai
 cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -S ./ -B ./build/
 cmake --build ./build/ --config Release -j 30
 cmake --install ./build/ --config Release --prefix ./install
@@ -22,4 +20,4 @@ cmake --install ./build/ --config Release --prefix ./install
 # cmake --build ./build/ --config Debug -j 30
 # cmake --install ./build/ --config Debug --prefix ./install
 
-cd ..
+Set-Location ..
