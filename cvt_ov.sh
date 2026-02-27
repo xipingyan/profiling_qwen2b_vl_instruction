@@ -1,7 +1,11 @@
-source python-env/bin/activate
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+source "$SCRIPT_DIR/python-env/bin/activate"
 # dependcy
 # pip install openvino-tokenizers openvino nncf optimum[intel]
-# pip install -U huggingface_hub
+# uv pip install --index-url https://pypi.org/simple -U huggingface-hub
 
 mkdir -p models
 cd models
@@ -17,6 +21,7 @@ model_id='Qwen/Qwen3.5-35B-A3B-Base'
 # Refer: https://hf-mirror.com/
 export HF_ENDPOINT=https://hf-mirror.com
 # huggingface-cli download --token [your token] --resume-download $model_id --local-dir $model_id
+# python -m huggingface_hub.commands.huggingface_cli download
 
 # compress to int4
 # optimum-cli export openvino --model $model_id --task image-text-to-text ov/Qwen2.5-VL-3B-Instruct/INT4 --weight-format int4 --trust-remote-code
