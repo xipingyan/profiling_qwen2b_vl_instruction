@@ -3,7 +3,7 @@ cd ${SCRIPT_DIR}
 
 # Dependencies:
 # uv venv qwen_env
-# uv pip install transformers torch
+# uv pip install transformers torch torchvision
 # uv pip install accelerate
 
 source ./qwen_env/bin/activate
@@ -19,5 +19,4 @@ export OPENAI_API_KEY="EMPTY"
 # Optional overrides:
 #   MODEL_ID=../models/Qwen/Qwen3-VL-8B-Instruct IMAGE_PATH=mathv-1327.jpg ./run_qwen3_5.sh
 
-
-python test_qwen3_5.py
+python example_qwen3_5.py

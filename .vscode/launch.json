@@ -191,6 +191,16 @@
             "python": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
             "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video"
         },
+        {
+            "name": "64_example_python/example_qwen3_5.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/example_qwen3_5.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
+		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
+        },
 
         {
             "name": "test_pipeline_genai",
