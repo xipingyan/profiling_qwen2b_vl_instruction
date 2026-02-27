@@ -6,25 +6,8 @@ import sys
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-# local_model_id = os.getenv("MODEL_ID", "../models/Qwen/Qwen3.5-35B-A3B-Base")
-local_model_id = os.getenv("MODEL_ID", "../models/Qwen/Qwen3.5-35B-A3B-FP8")
-
-
-def _parse_max_memory() -> dict:
-    """Build accelerate-style max_memory dict from env vars.
-
-    Examples:
-      MAX_MEMORY_GPU0=20GiB MAX_MEMORY_GPU1=28GiB MAX_MEMORY_CPU=96GiB
-    """
-    max_memory: dict = {}
-    for i in range(torch.cuda.device_count()):
-        v = os.getenv(f"MAX_MEMORY_GPU{i}")
-        if v:
-            max_memory[i] = v
-    v = os.getenv("MAX_MEMORY_CPU")
-    if v:
-        max_memory["cpu"] = v
-    return max_memory
+local_model_id = os.getenv("MODEL_ID", "../models/Qwen/Qwen3.5-35B-A3B-Base")
+# local_model_id = os.getenv("MODEL_ID", "../models/Qwen/Qwen3.5-35B-A3B-FP8")
 
 
 def test_qwen3_5_image():
@@ -32,39 +15,13 @@ def test_qwen3_5_image():
     
     # 1. Load the tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-    # Large checkpoints (e.g. FP8/MoE) may OOM during Transformers "CONVERSION"
-    # where it merges weights via torch.stack (extra temporary memory).
-    # If you hit that, try enabling offload/max_memory via env vars:
-    #   OFFLOAD_FOLDER=./offload MAX_MEMORY_GPU0=20GiB MAX_MEMORY_GPU1=28GiB MAX_MEMORY_CPU=96GiB
-    device_map = os.getenv("DEVICE_MAP", "balanced")
-    offload_folder = os.getenv("OFFLOAD_FOLDER")
-    max_memory = _parse_max_memory()
-
-    dtype_env = os.getenv("TORCH_DTYPE", "auto").lower()
-    if dtype_env in {"fp16", "float16"}:
-        torch_dtype = torch.float16
-    elif dtype_env in {"bf16", "bfloat16"}:
-        torch_dtype = torch.bfloat16
-    else:
-        torch_dtype = "auto"
-
-    load_kwargs = {
-        "torch_dtype": torch_dtype,
-        "device_map": device_map,
-        "low_cpu_mem_usage": True,
-    }
-    if offload_folder:
-        load_kwargs.update(
-            {
-                "offload_folder": offload_folder,
-                "offload_state_dict": True,
-            }
-        )
-    if max_memory:
-        load_kwargs["max_memory"] = max_memory
-
-    model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        # torch_dtype="auto",     # Automatically selects BF16 if supported, else FP16
+        # device_map="auto"       # Automatically distributes across available GPUs
+        torch_dtype=torch.float16,  # Force loading in FP16 (adjust if your GPU doesn't support it)
+        device_map="cpu"
+    )
     
     # 2. Prepare the input
     messages = [
