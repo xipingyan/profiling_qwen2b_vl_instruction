@@ -8,9 +8,11 @@ cd models
 
 # model_id='Qwen/Qwen2.5-VL-7B-Instruct'
 # model_id='Qwen/Qwen2.5-VL-3B-Instruct'
+model_id='Qwen/Qwen3.5-35B-A3B-Base'
 # model_id='katuni4ka/tiny-random-qwen2.5-vl/'
-model_id='katuni4ka/tiny-random-minicpmv-2_6'
-model_id='OpenVINO/Qwen2-0.5B-int8-ov'
+# model_id='katuni4ka/tiny-random-minicpmv-2_6'
+# model_id='OpenVINO/Qwen2-0.5B-int8-ov'
+
 
 # Refer: https://hf-mirror.com/
 export HF_ENDPOINT=https://hf-mirror.com
