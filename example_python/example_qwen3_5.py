@@ -5,6 +5,7 @@ import sys
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import cv2
 
 local_model_id = os.getenv("MODEL_ID", "../models/Qwen/Qwen3.5-35B-A3B-Base")
 
@@ -97,11 +98,82 @@ def test_qwen3_5_image():
     response = processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
     print("Response:\n", response)
 
+def load_video_frames(video_path, max_frames=10):
+    # Initialize video capture
+    cap = cv2.VideoCapture(video_path)
+    
+    # Get total frame count to calculate the interval
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    # Ensure we don't try to grab more frames than exist
+    max_frames = min(max_frames, total_frames)
+    
+    # Calculate step size to get evenly distributed frames
+    interval = total_frames // max_frames
+    
+    frames = []
+    for i in range(max_frames):
+        # Set the reader to the specific frame index
+        cap.set(cv2.CAP_PROP_POS_FRAMES, i * interval)
+        ret, frame = cap.read()
+        
+        if not ret:
+            break
+            
+        # OpenCV uses BGR; convert to RGB for PIL
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(Image.fromarray(frame_rgb))
+        
+    cap.release()
+    return frames
+
+def test_qwen3_5_video():
+    print(f"Start testing Qwen3.5 with video input using model: {local_model_id}")
+    model = Qwen3_5MoeForConditionalGeneration.from_pretrained(local_model_id, dtype=torch.float16, device_map="cpu")
+    tokenizer = AutoTokenizer.from_pretrained(local_model_id)
+    processor = AutoProcessor.from_pretrained(local_model_id)
+
+    if getattr(processor, "chat_template", None) is None and getattr(tokenizer, "chat_template", None):
+        processor.chat_template = tokenizer.chat_template
+
+    video_path = os.getenv("VIDEO_PATH", "spinning-earth-480.mp4")
+    # Load the video frames as a list of PIL Images. only keep 10 frames for testing.
+
+    frames = load_video_frames(video_path, max_frames=10)
+
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "video",
+                    "video": frames,
+                },
+                {"type": "text", "text": "请简要描述视频的内容。"},
+            ],
+        }
+    ]
+
+    # Preparation for inference
+    inputs = processor.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_dict=True,
+            return_tensors="pt"
+        )
+    inputs = inputs.to(model.device)
+
+    # Generate
+    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
+    response = processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    print("Response:\n", response)
 
 if __name__ == "__main__":
     try:
         # test_qwen3_5_llm()
-        test_qwen3_5_image()
+        # test_qwen3_5_image()
+        test_qwen3_5_video()
     except Exception as e:
         print(str(e), file=sys.stderr)
         raise
