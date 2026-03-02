@@ -104,6 +104,7 @@ def load_video_frames(video_path, max_frames=10):
     
     # Get total frame count to calculate the interval
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
     # Ensure we don't try to grab more frames than exist
     max_frames = min(max_frames, total_frames)
     
@@ -124,7 +125,7 @@ def load_video_frames(video_path, max_frames=10):
         frames.append(Image.fromarray(frame_rgb))
         
     cap.release()
-    return frames
+    return frames, fps
 
 def test_qwen3_5_video():
     print(f"Start testing Qwen3.5 with video input using model: {local_model_id}")
@@ -138,7 +139,8 @@ def test_qwen3_5_video():
     video_path = os.getenv("VIDEO_PATH", "spinning-earth-480.mp4")
     # Load the video frames as a list of PIL Images. only keep 10 frames for testing.
 
-    frames = load_video_frames(video_path, max_frames=10)
+    frames, fps = load_video_frames(video_path, max_frames=10)
+    print(f"Loaded {len(frames)} frames from the video at {fps} FPS.")
 
     messages = [
         {
@@ -159,7 +161,8 @@ def test_qwen3_5_video():
             tokenize=True,
             add_generation_prompt=True,
             return_dict=True,
-            return_tensors="pt"
+            return_tensors="pt",
+            fps=fps
         )
     inputs = inputs.to(model.device)
 
