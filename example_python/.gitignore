@@ -1,2 +1,6 @@
 qwen_env
 *.pt
+qwen3omni_env
+*.mp4
+*.wav
+__pycache__
