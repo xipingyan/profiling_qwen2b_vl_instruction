@@ -139,7 +139,7 @@ def test_qwen3_5_video():
     video_path = os.getenv("VIDEO_PATH", "spinning-earth-480.mp4")
     # Load the video frames as a list of PIL Images. only keep 10 frames for testing.
 
-    frames, fps = load_video_frames(video_path, max_frames=10)
+    frames, fps = load_video_frames(video_path, max_frames=9)
     print(f"Loaded {len(frames)} frames from the video at {fps} FPS.")
 
     messages = [

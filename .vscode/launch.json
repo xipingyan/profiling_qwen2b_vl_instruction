@@ -192,7 +192,7 @@
             "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/test_video"
         },
         {
-            "name": "64_example_python/example_qwen3_5.py",
+            "name": "68_example_python/example_qwen3_5.py",
             "type": "debugpy",
             "request": "launch",
             "program": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/example_qwen3_5.py",
