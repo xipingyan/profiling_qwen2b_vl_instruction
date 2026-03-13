@@ -201,7 +201,26 @@
             "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
 		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
         },
-
+        {
+            "name": "68_example_python/example_qwen3_omni.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/example_qwen3_omni.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen3omni_env/bin/python",
+		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
+        },
+        {
+            "name": "68_customer_qwen3_omni.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo/run_qwen3_omni_dense.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo/pyenv/bin/python",
+		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo"
+        },
         {
             "name": "test_pipeline_genai",
             "type": "debugpy",
