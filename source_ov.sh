@@ -13,7 +13,6 @@ if [ $USE_NIGHT_OV = "1" ]; then
     source ./openvino_toolkit_ubuntu${UBUNTU_VER}_2026.0.0.dev20260117_x86_64/setupvars.sh
 else
     echo "-------------- Use my build OV"
-    # source ./openvino/build/install/setupvars.sh
-    source ../modular_genai/openvino/build/install/setupvars.sh
+    source ./openvino/build/install/setupvars.sh
 fi
 
