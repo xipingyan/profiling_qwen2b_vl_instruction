@@ -15,11 +15,10 @@ else
     echo "-------------- Use my build OV"
     if [ -d "./openvino/build/install" ]; then
         source ./openvino/build/install/setupvars.sh
-    else if [ -d "../../modular_genai/openvino/build/install" ]; then
-        source ../../modular_genai/openvino/build/install/setupvars.sh
+    elif [ -d "${SCRIPT_MY_OV_DIR}/../modular_genai/openvino/build/install" ]; then
+        source "${SCRIPT_MY_OV_DIR}/../modular_genai/openvino/build/install/setupvars.sh"
     else
         echo "No OpenVINO setupvars.sh found, please check the path."
         exit 1
     fi
 fi
-
