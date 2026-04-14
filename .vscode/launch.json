@@ -2,6 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "dflash_example.py",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python/dflash_test/env_dflash/bin/python",
+            "program": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python/dflash_test/sample.py",
+            "cwd": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python/dflash_test/",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "a.out",
             "type": "cppdbg",
             "request": "launch",
@@ -150,9 +160,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/build/samples/cpp/visual_language_chat/visual_language_chat",
-            "args": ["/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/ov_model_i8/",
-                "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/cat_2.jpg", 
-                "GPU"],
+            "args": [
+                "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/ov_model_i8/",
+                "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/cat_2.jpg",
+                "GPU"
+            ],
             "stopAtEntry": false,
             "cwd": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai",
             "environment": [],
@@ -179,7 +191,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "python": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
-		    "cwd" : "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/"
+            "cwd": "/mnt/data_nvme1n1p1/xiping_workpath/ai_nas/profiling_qwen2b_vl_instruction/example_python/"
         },
         {
             "name": "95_example_python/example.py",
@@ -199,7 +211,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen_env/bin/python",
-		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
+            "cwd": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
         },
         {
             "name": "68_example_python/example_qwen3_omni.py",
@@ -209,17 +221,17 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen3omni_env/bin/python",
-		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
+            "cwd": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python"
         },
         {
             "name": "68_customer_qwen3_omni.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo/run_qwen3_omni_dense.py",
+            "program": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python/example_qwen3_omni_4b.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "python": "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo/pyenv/bin/python",
-		    "cwd" : "/home/xiping/mygithub/profiling_qwen2b_vl_instruction/example_python/customer_qwen3_omni/qwen3_omni_4b_demo"
+            "python": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python/qwen3omni_env/bin/python",
+            "cwd": "/mnt/data_nvme1n1p1/xiping_workpath/mygithub/profiling_qwen2b_vl_instruction/example_python"
         },
         {
             "name": "test_pipeline_genai",
@@ -231,10 +243,10 @@
             "python": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
             "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/example_ov_py",
             "env": {
-                "GENAI_ROOT_DIR":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/",
-                "OV_ROOT_DIR":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64",
-                "PYTHONPATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/openvino_genai:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/python/:${env:PYTHONPATH}",
-                "LD_LIBRARY_PATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python//../runtime/lib/intel64/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/runtime/lib/intel64/:${env:LD_LIBRARY_PATH}"
+                "GENAI_ROOT_DIR": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/",
+                "OV_ROOT_DIR": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64",
+                "PYTHONPATH": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python/openvino_genai:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/python/:${env:PYTHONPATH}",
+                "LD_LIBRARY_PATH": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python//../runtime/lib/intel64/:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.3.0.dev20250725_x86_64/runtime/lib/intel64/:${env:LD_LIBRARY_PATH}"
             }
         },
         {
@@ -243,7 +255,9 @@
             "python": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/python-env/bin/python",
             "request": "launch",
             "module": "pytest",
-            "purpose": ["debug-test"],
+            "purpose": [
+                "debug-test"
+            ],
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
@@ -255,12 +269,11 @@
                 "test_vlm_pipeline_match_optimum_preresized" // Keyword expression for test selection
             ],
             "cwd": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/tests/python_tests",
-            
             "env": {
-                "HF_ENDPOINT":"https://hf-mirror.com",
-                "PYTHONPATH":"/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/python:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/python",
-                "LD_LIBRARY_PATH":"/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/runtime/lib/intel64:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/runtime/lib/intel64",
-                "OV_CACHE":"./ov_cache"
+                "HF_ENDPOINT": "https://hf-mirror.com",
+                "PYTHONPATH": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/python:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/python",
+                "LD_LIBRARY_PATH": "/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu24_2025.4.0.dev20250929_x86_64/runtime/lib/intel64:/mnt/xiping/ai_nas/profiling_qwen2b_vl_instruction/openvino.genai/install/runtime/lib/intel64",
+                "OV_CACHE": "./ov_cache"
             }
         },
         {
@@ -269,7 +282,9 @@
             "python": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/python-env/bin/python",
             "request": "launch",
             "module": "pytest",
-            "purpose": ["debug-test"],
+            "purpose": [
+                "debug-test"
+            ],
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
@@ -281,12 +296,11 @@
                 "test_vlm_pipeline_match_optimum_preresized" // Keyword expression for test selection
             ],
             "cwd": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/tests/python_tests/",
-            
             "env": {
-                "HF_ENDPOINT":"https://hf-mirror.com",
-                "PYTHONPATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.4.0.dev20250929_x86_64/python:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python",
-                "LD_LIBRARY_PATH":"/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.4.0.dev20250929_x86_64/runtime/lib/intel64:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/runtime/lib/intel64",
-                "OV_CACHE":"./ov_cache"
+                "HF_ENDPOINT": "https://hf-mirror.com",
+                "PYTHONPATH": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.4.0.dev20250929_x86_64/python:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/python",
+                "LD_LIBRARY_PATH": "/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino_toolkit_ubuntu22_2025.4.0.dev20250929_x86_64/runtime/lib/intel64:/mnt/xiping/gpu_profiling/profiling_qwen2b_vl_instruction/openvino.genai/install/runtime/lib/intel64",
+                "OV_CACHE": "./ov_cache"
             }
         }
     ]

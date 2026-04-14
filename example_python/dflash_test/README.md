@@ -19,4 +19,5 @@ uv pip install -e .
 #### Run sample
 
 ```
+./run.sh
 ```
