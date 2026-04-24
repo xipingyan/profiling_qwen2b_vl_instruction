@@ -7,7 +7,7 @@ from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
 import openvino as ov
 
-def export_draft_model(draft):
+def export_draft_model(draft, target):
     print("== Start to export OV model.")
     batch, seq = 1, 5
     target_hidden = torch.randn(batch, seq, 12800)
@@ -19,9 +19,10 @@ def export_draft_model(draft):
     attention_mask = torch.ones(batch, draft_seq, dtype=torch.bool)
 
     class TraceableDraftWrapper(nn.Module):
-        def __init__(self, model: nn.Module):
+        def __init__(self, model: nn.Module, lm_head: nn.Module):
             super().__init__()
             self.model = model
+            self.lm_head = lm_head
 
         def forward(self, position_ids, attention_mask, noise_embedding, target_hidden):
             outputs = self.model(
@@ -34,14 +35,17 @@ def export_draft_model(draft):
                 return_dict=True,
             )
             if torch.is_tensor(outputs):
-                return outputs
+                hidden_states = outputs
+                return self.lm_head(hidden_states)
             if hasattr(outputs, "logits"):
-                return outputs.logits
+                hidden_states = outputs.logits
+                return self.lm_head(hidden_states)
             if isinstance(outputs, (tuple, list)):
-                return outputs[0]
+                hidden_states = outputs[0]
+                return self.lm_head(hidden_states)
             raise TypeError(f"Unsupported output type for export: {type(outputs)}")
 
-    wrapped = TraceableDraftWrapper(draft)
+    wrapped = TraceableDraftWrapper(draft, target.lm_head)
     example_input = (position_ids, attention_mask, noise_embedding, target_hidden)
 
     ov_model = ov.convert_model(
@@ -54,7 +58,9 @@ def export_draft_model(draft):
     # ov_model_4bit = compress_weights(ov_model, mode=CompressWeightsMode.INT4_SYM)
 
     print("== Start to save OV model.")
-    export_draft_model_name = "draft_model.xml"
+    export_draft_dir = os.getenv("EXPORT_DRAFT_DIR", "converted_draft_model")
+    os.makedirs(export_draft_dir, exist_ok=True)
+    export_draft_model_name = os.path.join(export_draft_dir, "draft_model.xml")
     ov.save_model(ov_model, export_draft_model_name)
     print(f"== OV model exported and saved  successfully as {export_draft_model_name}.")
 
@@ -113,13 +119,18 @@ def main():
         dtype=torch.bfloat16 if next(draft.parameters()).device.type == "cuda" else torch.float32,
         device_map=os.getenv("TARGET_DEVICE_MAP", os.getenv("DEVICE_MAP", "cpu")),
     ).eval()
-    tokenizer = AutoTokenizer.from_pretrained(MAIN_MODEL_DIR)
 
     if os.getenv("EXPORT_OV", "0") == "1":
         try:
-            export_draft_model(draft)
+            export_draft_model(draft, target)
         except Exception as exc:
             print(f"OV export failed: {exc}", file=sys.stderr)
+
+    if os.getenv("EXPORT_ONLY", "0") == "1":
+        print("EXPORT_ONLY=1, skip spec_generate.")
+        return
+
+    tokenizer = AutoTokenizer.from_pretrained(MAIN_MODEL_DIR)
 
     messages = [{"role": "user", "content": "How many positive whole-number divisors does 196 have?"}]
     input_ids = tokenizer.apply_chat_template(
