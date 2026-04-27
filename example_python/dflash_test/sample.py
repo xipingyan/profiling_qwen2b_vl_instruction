@@ -36,12 +36,18 @@ def export_draft_model(draft, target):
             )
             if torch.is_tensor(outputs):
                 hidden_states = outputs
+                block_size=16
+                hidden_states = hidden_states[:, -block_size+1:, :]
                 return self.lm_head(hidden_states)
             if hasattr(outputs, "logits"):
                 hidden_states = outputs.logits
+                block_size=16
+                hidden_states = hidden_states[:, -block_size+1:, :]
                 return self.lm_head(hidden_states)
             if isinstance(outputs, (tuple, list)):
                 hidden_states = outputs[0]
+                block_size=16
+                hidden_states = hidden_states[:, -block_size+1:, :]
                 return self.lm_head(hidden_states)
             raise TypeError(f"Unsupported output type for export: {type(outputs)}")
 
