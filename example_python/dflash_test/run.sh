@@ -4,4 +4,5 @@ source env_dflash/bin/activate
 rm -f ~/.cache/huggingface/modules/transformers_modules/dflash.py
 rm -rf ~/.cache/huggingface/modules/transformers_modules/__pycache__
 
+# EXPORT_OV=1 
 python sample.py

@@ -7,6 +7,33 @@ from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
 import openvino as ov
 
+def export_embedding_model(target):
+    # target.model.embed_tokens
+    print("== Start to export embeds OV model.")
+    batch, seq = 1, 5
+    input_ids = torch.randint(0, 1000, (batch, seq), dtype=torch.long)
+
+    class TraceableEmbedsWrapper(nn.Module):
+        def __init__(self, embed_tokens: nn.Module):
+            super().__init__()
+            self.embed_tokens = embed_tokens
+
+        def forward(self, input_ids):
+            outputs = self.embed_tokens(input_ids)
+            return outputs
+    wrapped = TraceableEmbedsWrapper(target.model.embed_tokens)
+    example_input = (input_ids,)
+    ov_model = ov.convert_model(
+        wrapped,
+        example_input=example_input,
+    )
+    print("== Start to save embeds OV model.")
+    export_embeds_dir = os.getenv("EXPORT_DRAFT_DIR", "exported_draft_model")
+    os.makedirs(export_embeds_dir, exist_ok=True)
+    export_embeds_model_name = os.path.join(export_embeds_dir, "openvino_text_embeddings_model.xml")
+    ov.save_model(ov_model, export_embeds_model_name)
+    print(f"== Embeds OV model exported and saved successfully as {export_embeds_model_name}.")
+
 def export_draft_model(draft, target):
     print("== Start to export OV model.")
     batch, seq = 1, 5
@@ -64,9 +91,9 @@ def export_draft_model(draft, target):
     # ov_model_4bit = compress_weights(ov_model, mode=CompressWeightsMode.INT4_SYM)
 
     print("== Start to save OV model.")
-    export_draft_dir = os.getenv("EXPORT_DRAFT_DIR", "converted_draft_model")
+    export_draft_dir = os.getenv("EXPORT_DRAFT_DIR", "exported_draft_model")
     os.makedirs(export_draft_dir, exist_ok=True)
-    export_draft_model_name = os.path.join(export_draft_dir, "draft_model.xml")
+    export_draft_model_name = os.path.join(export_draft_dir, "openvino_model.xml")
     ov.save_model(ov_model, export_draft_model_name)
     print(f"== OV model exported and saved  successfully as {export_draft_model_name}.")
 
@@ -129,6 +156,7 @@ def main():
     if os.getenv("EXPORT_OV", "0") == "1":
         try:
             export_draft_model(draft, target)
+            export_embedding_model(target)
         except Exception as exc:
             print(f"OV export failed: {exc}", file=sys.stderr)
 

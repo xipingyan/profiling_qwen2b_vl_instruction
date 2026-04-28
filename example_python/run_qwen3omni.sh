@@ -13,4 +13,8 @@ export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1}
 export OPENAI_BASE_URL="http://localhost:8000/v1"
 export OPENAI_API_KEY="EMPTY"
 
-python example_qwen3_omni.py
+# python example_qwen3_omni.py
+
+# Dependencies
+# uv pip install soundfile transformers torch
+python example_qwen3_omni_4b.py
