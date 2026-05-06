@@ -22,6 +22,11 @@ uv pip install -e .
 ./run.sh
 ```
 
+## Convert target model
+
+```
+export_qwen3_ov_model.sh
+```
 
 ## Convert draft model and verify
 

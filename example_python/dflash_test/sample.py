@@ -11,7 +11,7 @@ def export_embedding_model(target):
     # target.model.embed_tokens
     print("== Start to export embeds OV model.")
     batch, seq = 1, 5
-    input_ids = torch.randint(0, 1000, (batch, seq), dtype=torch.long)
+    input_ids = torch.randint(0, 20, (batch, seq), dtype=torch.long)
 
     class TraceableEmbedsWrapper(nn.Module):
         def __init__(self, embed_tokens: nn.Module):
@@ -27,15 +27,15 @@ def export_embedding_model(target):
         wrapped,
         example_input=example_input,
     )
-    print("== Start to save embeds OV model.")
+    print("  == Start to save embeds OV model.")
     export_embeds_dir = os.getenv("EXPORT_DRAFT_DIR", "exported_draft_model")
     os.makedirs(export_embeds_dir, exist_ok=True)
     export_embeds_model_name = os.path.join(export_embeds_dir, "openvino_text_embeddings_model.xml")
     ov.save_model(ov_model, export_embeds_model_name)
-    print(f"== Embeds OV model exported and saved successfully as {export_embeds_model_name}.")
+    print(f"  == Embeds OV model exported and saved successfully as {export_embeds_model_name}.")
 
 def export_draft_model(draft, target):
-    print("== Start to export OV model.")
+    print("== Start to export draft OV model.")
     batch, seq = 1, 5
     target_hidden = torch.randn(batch, seq, 12800)
     noise_embedding = torch.randn(batch, seq, 2560)
@@ -90,12 +90,12 @@ def export_draft_model(draft, target):
     # compress_weights is memory inplace.
     # ov_model_4bit = compress_weights(ov_model, mode=CompressWeightsMode.INT4_SYM)
 
-    print("== Start to save OV model.")
+    print("  == Start to save OV model.")
     export_draft_dir = os.getenv("EXPORT_DRAFT_DIR", "exported_draft_model")
     os.makedirs(export_draft_dir, exist_ok=True)
     export_draft_model_name = os.path.join(export_draft_dir, "openvino_model.xml")
     ov.save_model(ov_model, export_draft_model_name)
-    print(f"== OV model exported and saved  successfully as {export_draft_model_name}.")
+    print(f"  == Draft OV model exported and saved  successfully as {export_draft_model_name}.")
 
     # 导出为 ONNX 格式
     # dummy_input = {
