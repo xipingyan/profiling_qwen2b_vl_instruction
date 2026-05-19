@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source "$SCRIPT_DIR/python-env/bin/activate"
+OPTIMUM_CLI="$SCRIPT_DIR/python-env/bin/optimum-cli"
 # dependcy
 # pip install openvino-tokenizers openvino nncf optimum[intel]
 # uv pip install --index-url https://pypi.org/simple -U huggingface-hub
@@ -19,6 +20,11 @@ cd models
 # model_id='OpenVINO/Qwen2-0.5B-int8-ov'
 model_id='z-lab/Qwen3-4B-DFlash-b16'
 model_id='Qwen/Qwen3-4B'
+# model_id='OpenVINO/phi-2-int8-ov'
+model_id='openai/whisper-tiny'
+model_id='OpenVINO/whisper-base-fp16-ov'
+model_id='llmware/speech-t5-tts-ov'
+model_id='OpenVINO/stable-diffusion-v1-5-int8-ov'
 
 # Refer: https://hf-mirror.com/
 export HF_ENDPOINT=https://hf-mirror.com

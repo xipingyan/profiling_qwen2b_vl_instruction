@@ -426,10 +426,41 @@ int test_qwen2_5_vl_custom_vit(int argc, char *argv[])
     return 0;
 }
 
+int test_llm()
+{
+    std::string model_path = "../../modular_genai/composable_pipeline/tests/test_models/qwen3_ov_int4/";
+
+    std::string device = "CPU";
+    std::string prompts = "中国最发达的城市是哪个？使用json格式回答，例如：{'answer': '郑州'}，不要其他多余的文字。";
+
+    std::cout << "== Start to load model: " << model_path << std::endl;
+    ov::genai::GenerationConfig generation_config;
+    generation_config.max_new_tokens = 30;
+
+    auto scheduler_config = ov::genai::SchedulerConfig();
+    auto cb_pipe = ov::genai::ContinuousBatchingPipeline(
+        model_path,
+        scheduler_config,
+        device);
+    auto tokenizer = cb_pipe.get_tokenizer();
+
+    auto handle = cb_pipe.add_request(0, prompts, generation_config);
+    while (handle->get_status() != ov::genai::GenerationStatus::FINISHED)
+        cb_pipe.step();
+
+    auto outputs = handle->read_all();
+
+    auto res_cb_pipeline = tokenizer.decode(outputs[0].generated_ids);
+    std::cout << "== result: " << res_cb_pipeline << std::endl;
+
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
     try
     {
+        return test_llm();
         // return test_llm_lookup(argc, argv);
         // return test_vllm_lookup(argc, argv);
         // return test_cb_add_request_vs_vlm();
